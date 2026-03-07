@@ -51,10 +51,21 @@
     <!-- Main Content -->
     <main class="container main-content">
 
-      <!-- Top-level view switcher -->
-      <div class="page-tabs">
-        <button class="page-tab active" data-view="issuers">Issuer Dashboard</button>
-        <button class="page-tab" data-view="rankings">Stablecoin League Table</button>
+      <!-- Top bar: view switcher + data tools -->
+      <div class="content-header">
+        <div class="page-tabs">
+          <button class="page-tab active" data-view="issuers">Issuer Dashboard</button>
+          <button class="page-tab" data-view="rankings">Stablecoin League Table</button>
+        </div>
+        <div class="data-toolbar">
+          <button class="toolbar-btn" id="export-btn" title="Download all data as Excel">
+            ↓ Export Excel
+          </button>
+          <label class="toolbar-btn toolbar-btn-import" title="Upload edited Excel to update data">
+            ↑ Import Excel
+            <input type="file" id="excel-upload" accept=".xlsx,.xls" style="display:none" />
+          </label>
+        </div>
       </div>
 
       <!-- ===== ISSUERS VIEW ===== -->
@@ -138,6 +149,7 @@
       </div>
     </footer>
 
+    <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="data.js"></script>
     <script src="app.js"></script>
   </body>
