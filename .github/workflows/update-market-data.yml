@@ -1,15 +1,27 @@
 name: Update Stablecoin Market Data
 
+# Runs daily at 6 AM UTC, or on demand via the GitHub Actions UI.
 on:
   schedule:
-    - cron: "0 6 * * *" # Daily at 6 AM UTC
-  workflow_dispatch: # Allow manual trigger from GitHub UI
+    - cron: "0 6 * * *"
+  workflow_dispatch:
 
 jobs:
   update-data:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
+    env:
+      # Set this once in GitHub → Settings → Variables → Actions → New variable
+      # Name: GOOGLE_SHEET_ID
+      # Value: the ID from your sheet URL:
+      #   https://docs.google.com/spreadsheets/d/<GOOGLE_SHEET_ID>/edit
+      #
+      # The sheet must be published to the web (File → Share → Publish to web).
+      # If not set, the Action falls back to patching only market caps in the
+      # existing data.js (no metadata changes).
+      GOOGLE_SHEET_ID: ${{ vars.GOOGLE_SHEET_ID }}
 
     steps:
       - name: Checkout repository
@@ -20,7 +32,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Fetch latest market data from CoinGecko
+      - name: Fetch latest data (Sheets + CoinGecko) and regenerate data.js
         run: python scripts/update_market_data.py
 
       - name: Commit and push if data changed
@@ -29,6 +41,6 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data.js
           git diff --cached --quiet || (
-            git commit -m "chore: update stablecoin market data $(date -u +'%Y-%m-%d')" &&
+            git commit -m "chore: update stablecoin data $(date -u +'%Y-%m-%d')" &&
             git push
           )

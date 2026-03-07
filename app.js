@@ -600,12 +600,14 @@ function downloadExcel() {
   XLSX.utils.book_append_sheet(wb, wsCoins, "Stablecoins");
 
   // --- Sheet 2: Issuers ---
-  const issuerHeaders = ["ID", "Name", "Founded", "Headquarters", "Website", "Regulatory Status", "Description"];
+  const issuerHeaders = ["ID", "Name", "Logo", "Logo Color", "Founded", "Headquarters", "Website", "Regulatory Status", "Description"];
   const issuerRows = [issuerHeaders];
   STABLECOIN_DATA.issuers.forEach((issuer) => {
     issuerRows.push([
       issuer.id,
       issuer.name,
+      issuer.logo,
+      issuer.logoColor,
       issuer.founded,
       issuer.headquarters,
       issuer.website,
@@ -615,7 +617,7 @@ function downloadExcel() {
   });
   const wsIssuers = XLSX.utils.aoa_to_sheet(issuerRows);
   wsIssuers["!cols"] = [
-    { wch: 16 }, { wch: 26 }, { wch: 8 }, { wch: 24 }, { wch: 30 }, { wch: 34 }, { wch: 80 },
+    { wch: 16 }, { wch: 26 }, { wch: 6 }, { wch: 12 }, { wch: 8 }, { wch: 24 }, { wch: 30 }, { wch: 34 }, { wch: 80 },
   ];
   XLSX.utils.book_append_sheet(wb, wsIssuers, "Issuers");
 
