@@ -392,6 +392,9 @@ function renderRankingsTable() {
       ? `<span class="badge badge-legacy" style="margin-left:5px">Legacy</span>`
       : "";
 
+    // coin.issuer overrides the parent issuer name (e.g. USDtb → Anchorage Digital Bank)
+    const displayIssuer = coin.issuer || coin.issuerName;
+
     const tr = document.createElement("tr");
     tr.classList.add("rankings-row");
     tr.addEventListener("click", () => {
@@ -404,13 +407,14 @@ function renderRankingsTable() {
       <td class="col-ticker">
         <span class="rt-ticker">${coin.ticker}</span>${statusBadge}
       </td>
-      <td class="col-name rt-name">${coin.name}</td>
-      <td class="col-issuer rt-issuer">${coin.issuerName}</td>
+      <td class="col-name"><span class="rt-name">${coin.name}</span></td>
+      <td class="col-issuer rt-issuer">${displayIssuer}</td>
       <td class="col-peg rt-peg">${coin.peg}</td>
       <td class="col-type">
         <span class="badge badge-type rt-type">${coin.type}</span>
       </td>
       <td class="col-manager rt-manager">${coin.reserveManager || "—"}</td>
+      <td class="col-custodian rt-custodian">${coin.custodian || "—"}</td>
       <td class="col-mcap rt-mcap">${formatMarketCap(coin.marketCap)}</td>
       <td class="col-share">
         <div class="share-cell">

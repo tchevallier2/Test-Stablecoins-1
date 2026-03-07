@@ -976,14 +976,22 @@ body {
 }
 
 .rt-ticker {
-  font-weight: 800;
+  font-weight: 700;
   font-size: 14px;
-  letter-spacing: -0.2px;
+  letter-spacing: -0.1px;
+}
+
+.col-name {
+  max-width: 180px;
 }
 
 .rt-name {
   color: var(--text-secondary);
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
+  display: inline-block;
+  max-width: 170px;
+  line-height: 1.35;
 }
 
 .rt-issuer {
@@ -998,7 +1006,15 @@ body {
 
 .rt-manager {
   color: var(--text-secondary);
-  max-width: 200px;
+  max-width: 180px;
+}
+
+.col-custodian {
+  max-width: 160px;
+}
+
+.rt-custodian {
+  color: var(--text-secondary);
 }
 
 .rt-type {
