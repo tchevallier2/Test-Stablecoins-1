@@ -545,6 +545,326 @@ function initEventListeners() {
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeModal();
   });
+
+  // Export / Import
+  document.getElementById("export-btn").addEventListener("click", downloadExcel);
+  document.getElementById("excel-upload").addEventListener("change", (e) => {
+    if (e.target.files[0]) handleExcelUpload(e.target.files[0]);
+    e.target.value = ""; // reset so same file can be re-uploaded
+  });
+}
+
+// ---------- Excel Export ----------
+
+function downloadExcel() {
+  if (typeof XLSX === "undefined") {
+    alert("Spreadsheet library not loaded. Check your internet connection.");
+    return;
+  }
+
+  const wb = XLSX.utils.book_new();
+
+  // --- Sheet 1: Stablecoins ---
+  const coinHeaders = [
+    "Ticker", "Name", "Parent Issuer", "Legal Issuer", "Peg", "Type",
+    "Status", "Market Cap (USD)", "Asset Manager", "Custodian",
+    "Reserves Description", "Launched", "Blockchains", "Is New",
+  ];
+  const coinRows = [coinHeaders];
+  STABLECOIN_DATA.issuers.forEach((issuer) => {
+    issuer.stablecoins.forEach((sc) => {
+      coinRows.push([
+        sc.ticker,
+        sc.name,
+        issuer.name,
+        sc.issuer || issuer.name,
+        sc.peg,
+        sc.type,
+        sc.status || "active",
+        sc.marketCap !== null && sc.marketCap !== undefined ? sc.marketCap : "",
+        sc.reserveManager || "",
+        sc.custodian || "",
+        sc.reserves || "",
+        sc.launched || "",
+        (sc.blockchains || []).join(", "),
+        sc.isNew ? "Yes" : "No",
+      ]);
+    });
+  });
+  const wsCoins = XLSX.utils.aoa_to_sheet(coinRows);
+  wsCoins["!cols"] = [
+    { wch: 10 }, { wch: 32 }, { wch: 24 }, { wch: 26 }, { wch: 10 }, { wch: 28 },
+    { wch: 10 }, { wch: 18 }, { wch: 30 }, { wch: 26 }, { wch: 44 }, { wch: 12 },
+    { wch: 60 }, { wch: 8 },
+  ];
+  XLSX.utils.book_append_sheet(wb, wsCoins, "Stablecoins");
+
+  // --- Sheet 2: Issuers ---
+  const issuerHeaders = ["ID", "Name", "Logo", "Logo Color", "Founded", "Headquarters", "Website", "Regulatory Status", "Description"];
+  const issuerRows = [issuerHeaders];
+  STABLECOIN_DATA.issuers.forEach((issuer) => {
+    issuerRows.push([
+      issuer.id,
+      issuer.name,
+      issuer.logo,
+      issuer.logoColor,
+      issuer.founded,
+      issuer.headquarters,
+      issuer.website,
+      issuer.regulatoryStatus,
+      issuer.description,
+    ]);
+  });
+  const wsIssuers = XLSX.utils.aoa_to_sheet(issuerRows);
+  wsIssuers["!cols"] = [
+    { wch: 16 }, { wch: 26 }, { wch: 6 }, { wch: 12 }, { wch: 8 }, { wch: 24 }, { wch: 30 }, { wch: 34 }, { wch: 80 },
+  ];
+  XLSX.utils.book_append_sheet(wb, wsIssuers, "Issuers");
+
+  // --- Sheet 3: News ---
+  const newsHeaders = ["Issuer", "Date", "Headline", "Summary", "Tags", "URL"];
+  const newsRows = [newsHeaders];
+  STABLECOIN_DATA.issuers.forEach((issuer) => {
+    (issuer.news || []).forEach((item) => {
+      newsRows.push([
+        issuer.name,
+        item.date,
+        item.headline,
+        item.summary,
+        (item.tags || []).join(", "),
+        item.url || "",
+      ]);
+    });
+  });
+  const wsNews = XLSX.utils.aoa_to_sheet(newsRows);
+  wsNews["!cols"] = [
+    { wch: 24 }, { wch: 12 }, { wch: 70 }, { wch: 80 }, { wch: 30 }, { wch: 40 },
+  ];
+  XLSX.utils.book_append_sheet(wb, wsNews, "News");
+
+  const date = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `stablecoin-data-${date}.xlsx`);
+}
+
+// ---------- Excel Import ----------
+
+function handleExcelUpload(file) {
+  if (typeof XLSX === "undefined") {
+    alert("Spreadsheet library not loaded. Check your internet connection.");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const wb = XLSX.read(new Uint8Array(e.target.result), { type: "array" });
+
+      let updatedCoins = 0;
+      let updatedIssuers = 0;
+      let updatedNews = 0;
+
+      // --- Update Stablecoins sheet ---
+      const wsCoins = wb.Sheets["Stablecoins"];
+      if (wsCoins) {
+        const rows = XLSX.utils.sheet_to_json(wsCoins, { header: 1 });
+        if (rows.length >= 2) {
+          const h = rows[0];
+          const col = (name) => h.indexOf(name);
+
+          for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            const ticker = row[col("Ticker")];
+            if (!ticker) continue;
+
+            for (const issuer of STABLECOIN_DATA.issuers) {
+              const sc = issuer.stablecoins.find((s) => s.ticker === ticker);
+              if (!sc) continue;
+
+              const set = (field, idx, transform) => {
+                const val = row[idx];
+                if (val !== undefined && val !== "") {
+                  sc[field] = transform ? transform(val) : val;
+                }
+              };
+
+              set("name", col("Name"));
+              set("marketCap", col("Market Cap (USD)"), (v) => (v === "" ? null : Number(v) || null));
+              set("type", col("Type"));
+              set("status", col("Status"));
+              set("reserveManager", col("Asset Manager"));
+              set("custodian", col("Custodian"));
+              set("reserves", col("Reserves Description"));
+              set("peg", col("Peg"));
+
+              // Legal issuer override
+              const legalIssuer = row[col("Legal Issuer")];
+              if (legalIssuer && legalIssuer !== issuer.name) {
+                sc.issuer = legalIssuer;
+              } else if (legalIssuer === issuer.name) {
+                delete sc.issuer;
+              }
+
+              // Blockchains
+              const chains = row[col("Blockchains")];
+              if (chains) {
+                sc.blockchains = chains.split(",").map((c) => c.trim()).filter(Boolean);
+              }
+
+              updatedCoins++;
+              break;
+            }
+          }
+        }
+      }
+
+      // --- Update Issuers sheet ---
+      const wsIssuers = wb.Sheets["Issuers"];
+      if (wsIssuers) {
+        const rows = XLSX.utils.sheet_to_json(wsIssuers, { header: 1 });
+        if (rows.length >= 2) {
+          const h = rows[0];
+          const col = (name) => h.indexOf(name);
+
+          for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            const id = row[col("ID")];
+            const issuer = STABLECOIN_DATA.issuers.find((iss) => iss.id === id);
+            if (!issuer) continue;
+
+            const set = (field, idx) => {
+              const val = row[idx];
+              if (val !== undefined && val !== "") issuer[field] = val;
+            };
+            set("name", col("Name"));
+            set("headquarters", col("Headquarters"));
+            set("website", col("Website"));
+            set("regulatoryStatus", col("Regulatory Status"));
+            set("description", col("Description"));
+            if (row[col("Founded")]) issuer.founded = Number(row[col("Founded")]);
+            updatedIssuers++;
+          }
+        }
+      }
+
+      // --- Update News sheet ---
+      const wsNews = wb.Sheets["News"];
+      if (wsNews) {
+        const rows = XLSX.utils.sheet_to_json(wsNews, { header: 1 });
+        if (rows.length >= 2) {
+          const h = rows[0];
+          const col = (name) => h.indexOf(name);
+
+          // Group rows by issuer name
+          const newsByIssuer = {};
+          for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            const issuerName = row[col("Issuer")];
+            if (!issuerName) continue;
+            if (!newsByIssuer[issuerName]) newsByIssuer[issuerName] = [];
+            newsByIssuer[issuerName].push({
+              date: row[col("Date")] || "",
+              headline: row[col("Headline")] || "",
+              summary: row[col("Summary")] || "",
+              tags: (row[col("Tags")] || "").split(",").map((t) => t.trim()).filter(Boolean),
+              url: row[col("URL")] || undefined,
+            });
+          }
+
+          for (const issuer of STABLECOIN_DATA.issuers) {
+            if (newsByIssuer[issuer.name]) {
+              issuer.news = newsByIssuer[issuer.name];
+              updatedNews++;
+            }
+          }
+        }
+      }
+
+      // Recompute stats
+      STABLECOIN_DATA.stats.totalMarketCap = STABLECOIN_DATA.issuers.reduce(
+        (sum, iss) => sum + iss.stablecoins.reduce((s, sc) => s + (sc.marketCap || 0), 0), 0
+      );
+      STABLECOIN_DATA.stats.uniqueBlockchains = [
+        ...new Set(STABLECOIN_DATA.issuers.flatMap((iss) => iss.stablecoins.flatMap((sc) => sc.blockchains))),
+      ];
+
+      // Re-render
+      renderStats();
+      renderFilterTabs();
+      if (state.activeView === "issuers") renderIssuers();
+      else renderRankingsTable();
+
+      showImportBanner(updatedCoins, updatedIssuers, updatedNews);
+    } catch (err) {
+      alert(`Import failed: ${err.message}\n\nMake sure you are uploading an Excel file exported from this dashboard.`);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function showImportBanner(coins, issuers, news) {
+  const existing = document.getElementById("import-banner");
+  if (existing) existing.remove();
+
+  const parts = [];
+  if (coins) parts.push(`${coins} stablecoin${coins !== 1 ? "s" : ""}`);
+  if (issuers) parts.push(`${issuers} issuer${issuers !== 1 ? "s" : ""}`);
+  if (news) parts.push(`news for ${news} issuer${news !== 1 ? "s" : ""}`);
+  const summary = parts.length ? parts.join(", ") : "no records";
+
+  const banner = document.createElement("div");
+  banner.id = "import-banner";
+  banner.className = "import-banner";
+  banner.innerHTML = `
+    <span class="import-banner-icon">✓</span>
+    <span class="import-banner-text">Updated ${summary}. Changes are live in this session.</span>
+    <button class="import-download-btn" id="download-datajs-btn">Download updated data.js</button>
+    <button class="import-dismiss-btn" id="import-dismiss-btn">✕</button>
+  `;
+
+  const main = document.querySelector(".main-content");
+  main.insertBefore(banner, main.firstChild);
+
+  document.getElementById("download-datajs-btn").addEventListener("click", downloadDataJs);
+  document.getElementById("import-dismiss-btn").addEventListener("click", () => banner.remove());
+}
+
+// ---------- Download updated data.js ----------
+
+function downloadDataJs() {
+  const base = { meta: STABLECOIN_DATA.meta, issuers: STABLECOIN_DATA.issuers };
+  const json = JSON.stringify(base, null, 2);
+
+  const content =
+    `const STABLECOIN_DATA = ${json};\n\n` +
+    `// Computed stats\n` +
+    `STABLECOIN_DATA.stats = {\n` +
+    `  totalIssuers: STABLECOIN_DATA.issuers.length,\n` +
+    `  totalStablecoins: STABLECOIN_DATA.issuers.reduce(\n` +
+    `    (sum, i) => sum + i.stablecoins.length,\n` +
+    `    0\n` +
+    `  ),\n` +
+    `  totalMarketCap: STABLECOIN_DATA.issuers.reduce(\n` +
+    `    (sum, i) =>\n` +
+    `      sum +\n` +
+    `      i.stablecoins.reduce((s, sc) => s + (sc.marketCap || 0), 0),\n` +
+    `    0\n` +
+    `  ),\n` +
+    `  uniqueBlockchains: [\n` +
+    `    ...new Set(\n` +
+    `      STABLECOIN_DATA.issuers.flatMap((i) =>\n` +
+    `        i.stablecoins.flatMap((sc) => sc.blockchains)\n` +
+    `      )\n` +
+    `    ),\n` +
+    `  ],\n` +
+    `};\n`;
+
+  const blob = new Blob([content], { type: "application/javascript" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "data.js";
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ---------- Init ----------

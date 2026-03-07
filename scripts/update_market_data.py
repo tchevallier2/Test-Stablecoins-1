@@ -1,21 +1,41 @@
 """
-Fetches live stablecoin market caps from CoinGecko's free API
-and updates the marketCap fields in data.js.
+Generates data.js from two live sources:
 
-Runs as part of the GitHub Actions workflow (.github/workflows/update-market-data.yml).
+  1. Google Sheets (metadata)  — issuer info, custodians, asset managers,
+     blockchains, news, etc.  Set the spreadsheet ID in GitHub repo settings:
+     Settings → Variables → Actions → New repository variable → GOOGLE_SHEET_ID
+
+  2. CoinGecko free API (market data) — live market caps, always preferred
+     over whatever is in the sheet.
+
+Fallback: if GOOGLE_SHEET_ID is not set the script falls back to the
+original behaviour — it just patches the marketCap fields in the existing
+data.js without touching anything else.
+
+Google Sheet structure (3 tabs, same column headers as the ↓ Export Excel):
+  • Stablecoins — one row per coin
+  • Issuers     — one row per issuer
+  • News        — one row per news item
 """
 
+import csv
+import io
 import json
+import os
 import re
 import sys
 import time
+import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 
-# Maps each ticker in data.js to its CoinGecko coin ID.
-# If a coin isn't on CoinGecko (e.g. too new or institutional-only),
-# it's simply skipped and its existing value is preserved.
-TICKER_TO_COINGECKO_ID = {
+# ── Config ────────────────────────────────────────────────────────────────────
+
+GOOGLE_SHEET_ID = os.environ.get("GOOGLE_SHEET_ID", "").strip()
+
+# Maps each ticker to its CoinGecko coin ID.
+# Tickers not listed here are skipped (CoinGecko value kept as-is).
+TICKER_TO_CG_ID = {
     "USDT":   "tether",
     "XAUT":   "tether-gold",
     "USDC":   "usd-coin",
@@ -36,98 +56,257 @@ TICKER_TO_COINGECKO_ID = {
     "OUSG":   "ondo-short-term-us-government-bond-fund",
 }
 
-COINGECKO_API = "https://api.coingecko.com/api/v3/simple/price"
+# ── HTTP helper ───────────────────────────────────────────────────────────────
 
-
-def fetch_market_caps(coingecko_ids: list[str]) -> dict[str, int]:
-    """Returns a dict of coingecko_id -> market_cap_usd (integer)."""
-    ids_param = ",".join(coingecko_ids)
-    url = (
-        f"{COINGECKO_API}"
-        f"?ids={ids_param}"
-        f"&vs_currencies=usd"
-        f"&include_market_cap=true"
-    )
-
-    for attempt in range(3):
+def http_get(url: str, retries: int = 3) -> bytes:
+    for attempt in range(retries):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "stablecoin-dashboard/1.0"})
+            req = urllib.request.Request(
+                url, headers={"User-Agent": "stablecoin-dashboard/1.0"}
+            )
             with urllib.request.urlopen(req, timeout=30) as resp:
-                raw = json.loads(resp.read())
-            break
+                return resp.read()
         except Exception as exc:
-            if attempt == 2:
-                print(f"ERROR: CoinGecko request failed after 3 attempts: {exc}", file=sys.stderr)
-                sys.exit(1)
+            if attempt == retries - 1:
+                raise
             wait = 2 ** attempt
-            print(f"Attempt {attempt + 1} failed ({exc}), retrying in {wait}s…")
+            print(f"  Attempt {attempt + 1} failed ({exc}), retrying in {wait}s…")
             time.sleep(wait)
 
+# ── CoinGecko ─────────────────────────────────────────────────────────────────
+
+def fetch_market_caps() -> dict[str, int]:
+    """Returns ticker → market_cap_usd (int) for every mapped coin."""
+    ids = ",".join(TICKER_TO_CG_ID.values())
+    url = (
+        "https://api.coingecko.com/api/v3/simple/price"
+        f"?ids={ids}&vs_currencies=usd&include_market_cap=true"
+    )
+    print("Fetching market caps from CoinGecko…")
+    raw = json.loads(http_get(url))
+
+    cg_to_ticker = {v: k for k, v in TICKER_TO_CG_ID.items()}
     result = {}
     for cg_id, prices in raw.items():
         cap = prices.get("usd_market_cap")
-        if cap is not None:
-            result[cg_id] = int(cap)
+        if cap is not None and cg_id in cg_to_ticker:
+            result[cg_to_ticker[cg_id]] = int(cap)
     return result
 
+# ── Google Sheets ─────────────────────────────────────────────────────────────
 
-def update_data_js(market_caps_by_ticker: dict[str, int]) -> None:
-    """Reads data.js, patches marketCap values, writes it back."""
-    with open("data.js", "r") as f:
+def fetch_sheet(sheet_id: str, sheet_name: str) -> list[dict]:
+    """Fetch one tab from a publicly-published Google Sheet as CSV rows."""
+    encoded = urllib.parse.quote(sheet_name)
+    url = (
+        f"https://docs.google.com/spreadsheets/d/{sheet_id}"
+        f"/gviz/tq?tqx=out:csv&sheet={encoded}"
+    )
+    print(f"  Fetching sheet '{sheet_name}'…")
+    data = http_get(url).decode("utf-8")
+    return list(csv.DictReader(io.StringIO(data)))
+
+
+def _str(val) -> str:
+    return (val or "").strip()
+
+
+def _int(val) -> int | None:
+    v = _str(val)
+    try:
+        return int(v) if v else None
+    except ValueError:
+        return None
+
+
+def build_from_sheets(sheet_id: str, mcap_by_ticker: dict[str, int]) -> dict:
+    """
+    Fetches the three Google Sheets tabs and assembles the full data
+    structure.  Market caps from CoinGecko always override the sheet value.
+    """
+    print("Building data from Google Sheets…")
+    issuers_rows = fetch_sheet(sheet_id, "Issuers")
+    coins_rows   = fetch_sheet(sheet_id, "Stablecoins")
+    news_rows    = fetch_sheet(sheet_id, "News")
+
+    # ── Group coins by parent issuer ──────────────────────────────────────────
+    coins_by_issuer: dict[str, list] = {}
+    for row in coins_rows:
+        parent = _str(row.get("Parent Issuer"))
+        if not parent:
+            continue
+        ticker = _str(row.get("Ticker"))
+
+        # Market cap: CoinGecko wins; fall back to sheet value
+        mcap = mcap_by_ticker.get(ticker)
+        if mcap is None:
+            sheet_val = _str(row.get("Market Cap (USD)"))
+            try:
+                mcap = int(float(sheet_val)) if sheet_val else None
+            except ValueError:
+                mcap = None
+
+        blockchains = [
+            b.strip()
+            for b in _str(row.get("Blockchains")).split(",")
+            if b.strip()
+        ]
+
+        sc: dict = {
+            "ticker":          ticker,
+            "name":            _str(row.get("Name")),
+            "peg":             _str(row.get("Peg")),
+            "marketCap":       mcap,
+            "type":            _str(row.get("Type")),
+            "launched":        _str(row.get("Launched")) or None,
+            "status":          _str(row.get("Status")) or "active",
+            "reserves":        _str(row.get("Reserves Description")) or None,
+            "reserveManager":  _str(row.get("Asset Manager")) or None,
+            "custodian":       _str(row.get("Custodian")) or None,
+            "blockchains":     blockchains,
+        }
+
+        # Legal issuer override (e.g. USDtb → Anchorage Digital Bank)
+        legal = _str(row.get("Legal Issuer"))
+        if legal and legal != parent:
+            sc["issuer"] = legal
+
+        if _str(row.get("Is New")).lower() in ("yes", "true", "1"):
+            sc["isNew"] = True
+
+        coins_by_issuer.setdefault(parent, []).append(sc)
+
+    # ── Group news by issuer ──────────────────────────────────────────────────
+    news_by_issuer: dict[str, list] = {}
+    for row in news_rows:
+        issuer_name = _str(row.get("Issuer"))
+        if not issuer_name:
+            continue
+        tags = [t.strip() for t in _str(row.get("Tags")).split(",") if t.strip()]
+        item: dict = {
+            "date":     _str(row.get("Date")),
+            "headline": _str(row.get("Headline")),
+            "summary":  _str(row.get("Summary")),
+            "tags":     tags,
+        }
+        url = _str(row.get("URL"))
+        if url:
+            item["url"] = url
+        news_by_issuer.setdefault(issuer_name, []).append(item)
+
+    # ── Build issuers list ────────────────────────────────────────────────────
+    issuers = []
+    for row in issuers_rows:
+        name = _str(row.get("Name"))
+        if not name:
+            continue
+        issuers.append({
+            "id":               _str(row.get("ID")),
+            "name":             name,
+            "logo":             _str(row.get("Logo")) or "◈",
+            "logoColor":        _str(row.get("Logo Color")) or "#2775CA",
+            "founded":          _int(row.get("Founded")),
+            "headquarters":     _str(row.get("Headquarters")),
+            "website":          _str(row.get("Website")),
+            "description":      _str(row.get("Description")),
+            "regulatoryStatus": _str(row.get("Regulatory Status")),
+            "stablecoins":      coins_by_issuer.get(name, []),
+            "news":             news_by_issuer.get(name, []),
+        })
+
+    today     = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    total_cap = sum(
+        sc.get("marketCap") or 0
+        for iss in issuers
+        for sc in iss["stablecoins"]
+    )
+
+    return {"meta": {"lastUpdated": today, "totalMarketCap": total_cap}, "issuers": issuers}
+
+
+def write_data_js(data: dict) -> None:
+    base_json = json.dumps(
+        {"meta": data["meta"], "issuers": data["issuers"]}, indent=2
+    )
+    content = (
+        f"const STABLECOIN_DATA = {base_json};\n\n"
+        "// Computed stats\n"
+        "STABLECOIN_DATA.stats = {\n"
+        "  totalIssuers: STABLECOIN_DATA.issuers.length,\n"
+        "  totalStablecoins: STABLECOIN_DATA.issuers.reduce(\n"
+        "    (sum, i) => sum + i.stablecoins.length,\n"
+        "    0\n"
+        "  ),\n"
+        "  totalMarketCap: STABLECOIN_DATA.issuers.reduce(\n"
+        "    (sum, i) =>\n"
+        "      sum +\n"
+        "      i.stablecoins.reduce((s, sc) => s + (sc.marketCap || 0), 0),\n"
+        "    0\n"
+        "  ),\n"
+        "  uniqueBlockchains: [\n"
+        "    ...new Set(\n"
+        "      STABLECOIN_DATA.issuers.flatMap((i) =>\n"
+        "        i.stablecoins.flatMap((sc) => sc.blockchains)\n"
+        "      )\n"
+        "    ),\n"
+        "  ],\n"
+        "};\n"
+    )
+    with open("data.js", "w") as f:
+        f.write(content)
+
+# ── Fallback: patch-only mode ─────────────────────────────────────────────────
+
+def patch_market_caps_only(mcap_by_ticker: dict[str, int]) -> None:
+    """
+    Original behaviour: read existing data.js, patch only the marketCap
+    fields using regex, leave everything else untouched.
+    Used when GOOGLE_SHEET_ID is not configured.
+    """
+    print("GOOGLE_SHEET_ID not set — patching market caps in existing data.js only.")
+    with open("data.js") as f:
         content = f.read()
 
     updated = []
-    skipped = []
-
-    for ticker, cap in market_caps_by_ticker.items():
-        # Match the ticker field followed (non-greedily) by its marketCap field
-        # within the same stablecoin object.  Works because ticker always
-        # appears before marketCap in every stablecoin block.
+    for ticker, cap in mcap_by_ticker.items():
         pattern = rf'(ticker: "{re.escape(ticker)}",[\s\S]*?marketCap: )(\d+|null)'
         new_content = re.sub(pattern, rf"\g<1>{cap}", content)
         if new_content != content:
             updated.append(f"  {ticker}: {cap:,}")
             content = new_content
-        else:
-            skipped.append(ticker)
 
-    # Update meta fields
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     content = re.sub(r'lastUpdated: "[^"]*"', f'lastUpdated: "{today}"', content)
 
-    total = sum(market_caps_by_ticker.values())
+    total = sum(mcap_by_ticker.values())
     content = re.sub(r"totalMarketCap: \d+", f"totalMarketCap: {total}", content)
 
     with open("data.js", "w") as f:
         f.write(content)
 
-    print(f"Updated {len(updated)} coins:")
+    print(f"Patched {len(updated)} market caps:")
     for line in updated:
         print(line)
-    if skipped:
-        print(f"Skipped (no regex match — check ticker spelling): {skipped}")
-    print(f"lastUpdated → {today}")
-    print(f"totalMarketCap → {total:,}")
 
+# ── Main ──────────────────────────────────────────────────────────────────────
 
 def main():
-    coingecko_ids = list(TICKER_TO_COINGECKO_ID.values())
-    print(f"Fetching market caps for {len(coingecko_ids)} coins from CoinGecko…")
-    raw_caps = fetch_market_caps(coingecko_ids)
+    mcap_by_ticker = fetch_market_caps()
+    print(f"Got market caps for: {', '.join(sorted(mcap_by_ticker))}\n")
 
-    # Translate CoinGecko IDs back to tickers
-    cg_id_to_ticker = {v: k for k, v in TICKER_TO_COINGECKO_ID.items()}
-    market_caps_by_ticker = {
-        cg_id_to_ticker[cg_id]: cap
-        for cg_id, cap in raw_caps.items()
-        if cg_id in cg_id_to_ticker
-    }
-
-    not_found = [t for t, cg_id in TICKER_TO_COINGECKO_ID.items() if cg_id not in raw_caps]
-    if not_found:
-        print(f"No CoinGecko data for: {not_found} (existing values kept)")
-
-    update_data_js(market_caps_by_ticker)
+    if GOOGLE_SHEET_ID:
+        data = build_from_sheets(GOOGLE_SHEET_ID, mcap_by_ticker)
+        write_data_js(data)
+        total = data["meta"]["totalMarketCap"]
+        n_coins = sum(len(iss["stablecoins"]) for iss in data["issuers"])
+        print(
+            f"\nDone. Wrote {len(data['issuers'])} issuers, {n_coins} coins. "
+            f"Total market cap: ${total:,.0f}"
+        )
+    else:
+        patch_market_caps_only(mcap_by_ticker)
+        print("\nDone. To enable full Google Sheets sync, set GOOGLE_SHEET_ID "
+              "as a GitHub repository variable (Settings → Variables → Actions).")
 
 
 if __name__ == "__main__":
