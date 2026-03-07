@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stablecoin Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="site-header">
+      <div class="container header-inner">
+        <div class="brand">
+          <span class="brand-icon">◈</span>
+          <div>
+            <h1 class="brand-name">Stablecoin Dashboard</h1>
+            <p class="brand-sub">Tracking the stablecoin ecosystem</p>
+          </div>
+        </div>
+        <div class="header-meta">
+          <span class="last-updated" id="last-updated"></span>
+          <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+            <span class="theme-icon">☀</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Market Overview Stats -->
+    <section class="stats-bar">
+      <div class="container stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Market Cap</div>
+          <div class="stat-value" id="stat-market-cap">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Stablecoin Issuers</div>
+          <div class="stat-value" id="stat-issuers">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Stablecoins Tracked</div>
+          <div class="stat-value" id="stat-stablecoins">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Blockchains Supported</div>
+          <div class="stat-value" id="stat-blockchains">—</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="container main-content">
+      <!-- Controls -->
+      <div class="controls-bar">
+        <div class="filter-tabs" id="filter-tabs">
+          <button class="tab-btn active" data-filter="all">All Issuers</button>
+        </div>
+        <div class="view-controls">
+          <div class="search-wrapper">
+            <span class="search-icon">⌕</span>
+            <input
+              type="text"
+              id="search-input"
+              class="search-input"
+              placeholder="Search stablecoins or issuers…"
+            />
+          </div>
+          <div class="sort-wrapper">
+            <select id="sort-select" class="sort-select">
+              <option value="marketcap">Sort: Market Cap</option>
+              <option value="name">Sort: Name</option>
+              <option value="founded">Sort: Founded</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Issuer Grid -->
+      <div id="issuers-container" class="issuers-grid"></div>
+
+      <!-- No results -->
+      <div id="no-results" class="no-results hidden">
+        <div class="no-results-icon">⊘</div>
+        <p>No issuers or stablecoins match your search.</p>
+      </div>
+    </main>
+
+    <!-- Stablecoin Detail Modal -->
+    <div id="modal-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true">
+      <div class="modal" id="modal-content">
+        <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+        <div id="modal-body"></div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <p>Data is for informational purposes only. Market cap figures are approximate.</p>
+        <p>Last updated: <span id="footer-date"></span></p>
+      </div>
+    </footer>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
