@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stablecoin Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon">◈</span>
+          <span class="logo-text">StableDash</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-view="overview">
+          <span class="nav-icon">⊞</span> Overview
+        </a>
+        <div class="nav-section-label">Issuers</div>
+        <a href="#" class="nav-item" data-view="issuer" data-issuer="tether">
+          <span class="nav-icon">◉</span> Tether
+        </a>
+        <a href="#" class="nav-item" data-view="issuer" data-issuer="circle">
+          <span class="nav-icon">◉</span> Circle
+        </a>
+        <a href="#" class="nav-item" data-view="issuer" data-issuer="makerdao">
+          <span class="nav-icon">◉</span> Sky / MakerDAO
+        </a>
+        <a href="#" class="nav-item" data-view="issuer" data-issuer="ethena">
+          <span class="nav-icon">◉</span> Ethena
+        </a>
+        <a href="#" class="nav-item" data-view="issuer" data-issuer="paypal">
+          <span class="nav-icon">◉</span> PayPal
+        </a>
+        <a href="#" class="nav-item" data-view="issuer" data-issuer="ripple">
+          <span class="nav-icon">◉</span> Ripple
+        </a>
+        <a href="#" class="nav-item" data-view="issuer" data-issuer="firstdigital">
+          <span class="nav-icon">◉</span> First Digital
+        </a>
+        <a href="#" class="nav-item" data-view="issuer" data-issuer="paxos">
+          <span class="nav-icon">◉</span> Paxos
+        </a>
+        <a href="#" class="nav-item" data-view="issuer" data-issuer="frax">
+          <span class="nav-icon">◉</span> Frax Finance
+        </a>
+        <div class="nav-section-label">More</div>
+        <a href="#" class="nav-item" data-view="news">
+          <span class="nav-icon">◎</span> Latest News
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <span class="last-updated">Last updated: Mar 2026</span>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main-content">
+      <header class="topbar">
+        <div class="topbar-title" id="page-title">Overview</div>
+        <div class="topbar-meta">
+          <span class="badge badge-live">● Live Data</span>
+          <span class="market-cap-label">Total Stablecoin Market Cap:</span>
+          <span class="market-cap-value">~$225B</span>
+        </div>
+      </header>
+
+      <!-- Overview View -->
+      <div id="view-overview" class="view active">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Market Cap</div>
+            <div class="stat-value">$225B</div>
+            <div class="stat-sub">+12% YoY</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Issuers Tracked</div>
+            <div class="stat-value">9</div>
+            <div class="stat-sub">Major issuers</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Stablecoins Tracked</div>
+            <div class="stat-value">18</div>
+            <div class="stat-sub">Active &amp; announced</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Blockchains Covered</div>
+            <div class="stat-value">15+</div>
+            <div class="stat-sub">Networks</div>
+          </div>
+        </div>
+
+        <div class="section-title">Stablecoin Issuers</div>
+        <div class="issuers-grid" id="issuers-grid"></div>
+
+        <div class="section-title">Market Share</div>
+        <div class="market-share-container">
+          <div class="market-share-chart" id="market-share-chart"></div>
+          <div class="market-share-legend" id="market-share-legend"></div>
+        </div>
+      </div>
+
+      <!-- Issuer Detail View -->
+      <div id="view-issuer" class="view">
+        <div id="issuer-detail"></div>
+      </div>
+
+      <!-- News View -->
+      <div id="view-news" class="view">
+        <div class="section-title">Latest Stablecoin News</div>
+        <div class="news-grid" id="news-grid"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
