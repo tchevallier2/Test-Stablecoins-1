@@ -547,24 +547,27 @@ function initEventListeners() {
   });
 
   // Export / Import
-  document.getElementById("export-btn").addEventListener("click", downloadExcel);
+  document.getElementById("export-btn").addEventListener("click", downloadCSV);
   document.getElementById("excel-upload").addEventListener("change", (e) => {
-    if (e.target.files[0]) handleExcelUpload(e.target.files[0]);
+    if (e.target.files[0]) handleImport(e.target.files[0]);
     e.target.value = ""; // reset so same file can be re-uploaded
   });
 }
 
-// ---------- Excel Export ----------
+// ---------- CSV Export ----------
 
-function downloadExcel() {
-  if (typeof XLSX === "undefined") {
-    alert("Spreadsheet library not loaded. Check your internet connection.");
-    return;
-  }
+function csvEscape(val) {
+  const s = String(val ?? "");
+  return (s.includes(",") || s.includes('"') || s.includes("\n"))
+    ? '"' + s.replace(/"/g, '""') + '"'
+    : s;
+}
 
-  const wb = XLSX.utils.book_new();
+function buildCSV(rows) {
+  return rows.map((row) => row.map(csvEscape).join(",")).join("\n");
+}
 
-  // --- Sheet 1: Stablecoins ---
+function downloadCSV() {
   const coinHeaders = [
     "Ticker", "Name", "Parent Issuer", "Legal Issuer", "Peg", "Type",
     "Status", "Market Cap (USD)", "Asset Manager", "Custodian",
@@ -591,62 +594,120 @@ function downloadExcel() {
       ]);
     });
   });
-  const wsCoins = XLSX.utils.aoa_to_sheet(coinRows);
-  wsCoins["!cols"] = [
-    { wch: 10 }, { wch: 32 }, { wch: 24 }, { wch: 26 }, { wch: 10 }, { wch: 28 },
-    { wch: 10 }, { wch: 18 }, { wch: 30 }, { wch: 26 }, { wch: 44 }, { wch: 12 },
-    { wch: 60 }, { wch: 8 },
-  ];
-  XLSX.utils.book_append_sheet(wb, wsCoins, "Stablecoins");
-
-  // --- Sheet 2: Issuers ---
-  const issuerHeaders = ["ID", "Name", "Logo", "Logo Color", "Founded", "Headquarters", "Website", "Regulatory Status", "Description"];
-  const issuerRows = [issuerHeaders];
-  STABLECOIN_DATA.issuers.forEach((issuer) => {
-    issuerRows.push([
-      issuer.id,
-      issuer.name,
-      issuer.logo,
-      issuer.logoColor,
-      issuer.founded,
-      issuer.headquarters,
-      issuer.website,
-      issuer.regulatoryStatus,
-      issuer.description,
-    ]);
-  });
-  const wsIssuers = XLSX.utils.aoa_to_sheet(issuerRows);
-  wsIssuers["!cols"] = [
-    { wch: 16 }, { wch: 26 }, { wch: 6 }, { wch: 12 }, { wch: 8 }, { wch: 24 }, { wch: 30 }, { wch: 34 }, { wch: 80 },
-  ];
-  XLSX.utils.book_append_sheet(wb, wsIssuers, "Issuers");
-
-  // --- Sheet 3: News ---
-  const newsHeaders = ["Issuer", "Date", "Headline", "Summary", "Tags", "URL"];
-  const newsRows = [newsHeaders];
-  STABLECOIN_DATA.issuers.forEach((issuer) => {
-    (issuer.news || []).forEach((item) => {
-      newsRows.push([
-        issuer.name,
-        item.date,
-        item.headline,
-        item.summary,
-        (item.tags || []).join(", "),
-        item.url || "",
-      ]);
-    });
-  });
-  const wsNews = XLSX.utils.aoa_to_sheet(newsRows);
-  wsNews["!cols"] = [
-    { wch: 24 }, { wch: 12 }, { wch: 70 }, { wch: 80 }, { wch: 30 }, { wch: 40 },
-  ];
-  XLSX.utils.book_append_sheet(wb, wsNews, "News");
 
   const date = new Date().toISOString().slice(0, 10);
-  XLSX.writeFile(wb, `stablecoin-data-${date}.xlsx`);
+  const blob = new Blob([buildCSV(coinRows)], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `stablecoin-data-${date}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
-// ---------- Excel Import ----------
+// ---------- Import (CSV or Excel) ----------
+
+function handleImport(file) {
+  const isCSV = file.name.toLowerCase().endsWith(".csv");
+  if (isCSV) {
+    handleCSVImport(file);
+  } else {
+    handleExcelUpload(file);
+  }
+}
+
+function handleCSVImport(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const lines = e.target.result.split(/\r?\n/);
+      const rows = lines.map((line) => {
+        // Simple CSV parse: handle quoted fields
+        const fields = [];
+        let field = "";
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (inQuotes) {
+            if (ch === '"' && line[i + 1] === '"') { field += '"'; i++; }
+            else if (ch === '"') { inQuotes = false; }
+            else { field += ch; }
+          } else {
+            if (ch === '"') { inQuotes = true; }
+            else if (ch === ',') { fields.push(field); field = ""; }
+            else { field += ch; }
+          }
+        }
+        fields.push(field);
+        return fields;
+      }).filter((r) => r.some((f) => f !== ""));
+
+      if (rows.length < 2) throw new Error("Empty file");
+
+      const h = rows[0];
+      const col = (name) => h.indexOf(name);
+      let updatedCoins = 0;
+
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const ticker = row[col("Ticker")];
+        if (!ticker) continue;
+
+        for (const issuer of STABLECOIN_DATA.issuers) {
+          const sc = issuer.stablecoins.find((s) => s.ticker === ticker);
+          if (!sc) continue;
+
+          const set = (field, idx, transform) => {
+            const val = row[idx];
+            if (val !== undefined && val !== "") {
+              sc[field] = transform ? transform(val) : val;
+            }
+          };
+
+          set("name", col("Name"));
+          set("marketCap", col("Market Cap (USD)"), (v) => (v === "" ? null : Number(v) || null));
+          set("type", col("Type"));
+          set("status", col("Status"));
+          set("reserveManager", col("Asset Manager"));
+          set("custodian", col("Custodian"));
+          set("reserves", col("Reserves Description"));
+          set("peg", col("Peg"));
+
+          const legalIssuer = row[col("Legal Issuer")];
+          if (legalIssuer && legalIssuer !== issuer.name) {
+            sc.issuer = legalIssuer;
+          } else if (legalIssuer === issuer.name) {
+            delete sc.issuer;
+          }
+
+          const chains = row[col("Blockchains")];
+          if (chains) {
+            sc.blockchains = chains.split(",").map((c) => c.trim()).filter(Boolean);
+          }
+
+          updatedCoins++;
+          break;
+        }
+      }
+
+      STABLECOIN_DATA.stats.totalMarketCap = STABLECOIN_DATA.issuers.reduce(
+        (sum, iss) => sum + iss.stablecoins.reduce((s, sc) => s + (sc.marketCap || 0), 0), 0
+      );
+      STABLECOIN_DATA.stats.uniqueBlockchains = [
+        ...new Set(STABLECOIN_DATA.issuers.flatMap((iss) => iss.stablecoins.flatMap((sc) => sc.blockchains))),
+      ];
+
+      renderStats();
+      renderFilterTabs();
+      renderIssuers();
+      renderRankingsTable();
+      showImportBanner(updatedCoins, 0, 0);
+    } catch (err) {
+      alert(`Import failed: ${err.message}\n\nMake sure you are uploading a CSV exported from this dashboard.`);
+    }
+  };
+  reader.readAsText(file);
+}
 
 function handleExcelUpload(file) {
   if (typeof XLSX === "undefined") {
@@ -787,15 +848,15 @@ function handleExcelUpload(file) {
         ...new Set(STABLECOIN_DATA.issuers.flatMap((iss) => iss.stablecoins.flatMap((sc) => sc.blockchains))),
       ];
 
-      // Re-render
+      // Re-render both views so rankings table always reflects imported data
       renderStats();
       renderFilterTabs();
-      if (state.activeView === "issuers") renderIssuers();
-      else renderRankingsTable();
+      renderIssuers();
+      renderRankingsTable();
 
       showImportBanner(updatedCoins, updatedIssuers, updatedNews);
     } catch (err) {
-      alert(`Import failed: ${err.message}\n\nMake sure you are uploading an Excel file exported from this dashboard.`);
+      alert(`Import failed: ${err.message}\n\nMake sure you are uploading a CSV or Excel file exported from this dashboard.`);
     }
   };
   reader.readAsArrayBuffer(file);
