@@ -617,30 +617,18 @@ function handleImport(file) {
 }
 
 function handleCSVImport(file) {
+  if (typeof XLSX === "undefined") {
+    alert("Spreadsheet library not loaded. Check your internet connection.");
+    return;
+  }
   const reader = new FileReader();
   reader.onload = (e) => {
     try {
-      const lines = e.target.result.split(/\r?\n/);
-      const rows = lines.map((line) => {
-        // Simple CSV parse: handle quoted fields
-        const fields = [];
-        let field = "";
-        let inQuotes = false;
-        for (let i = 0; i < line.length; i++) {
-          const ch = line[i];
-          if (inQuotes) {
-            if (ch === '"' && line[i + 1] === '"') { field += '"'; i++; }
-            else if (ch === '"') { inQuotes = false; }
-            else { field += ch; }
-          } else {
-            if (ch === '"') { inQuotes = true; }
-            else if (ch === ',') { fields.push(field); field = ""; }
-            else { field += ch; }
-          }
-        }
-        fields.push(field);
-        return fields;
-      }).filter((r) => r.some((f) => f !== ""));
+      // Use XLSX to parse CSV: handles UTF-8 BOM, quoted fields, and
+      // multiline cells that a line-by-line parser would mishandle.
+      const wb = XLSX.read(e.target.result, { type: "string" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
 
       if (rows.length < 2) throw new Error("Empty file");
 
@@ -682,7 +670,7 @@ function handleCSVImport(file) {
 
           const chains = row[col("Blockchains")];
           if (chains) {
-            sc.blockchains = chains.split(",").map((c) => c.trim()).filter(Boolean);
+            sc.blockchains = String(chains).split(",").map((c) => c.trim()).filter(Boolean);
           }
 
           updatedCoins++;
