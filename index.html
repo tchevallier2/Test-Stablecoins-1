@@ -50,39 +50,75 @@
 
     <!-- Main Content -->
     <main class="container main-content">
-      <!-- Controls -->
-      <div class="controls-bar">
-        <div class="filter-tabs" id="filter-tabs">
-          <button class="tab-btn active" data-filter="all">All Issuers</button>
+
+      <!-- Top-level view switcher -->
+      <div class="page-tabs">
+        <button class="page-tab active" data-view="issuers">Issuer Dashboard</button>
+        <button class="page-tab" data-view="rankings">Rankings Table</button>
+      </div>
+
+      <!-- ===== ISSUERS VIEW ===== -->
+      <div id="issuers-view">
+        <!-- Controls -->
+        <div class="controls-bar">
+          <div class="filter-tabs" id="filter-tabs">
+            <button class="tab-btn active" data-filter="all">All Issuers</button>
+          </div>
+          <div class="view-controls">
+            <div class="search-wrapper">
+              <span class="search-icon">⌕</span>
+              <input
+                type="text"
+                id="search-input"
+                class="search-input"
+                placeholder="Search stablecoins or issuers…"
+              />
+            </div>
+            <div class="sort-wrapper">
+              <select id="sort-select" class="sort-select">
+                <option value="marketcap">Sort: Market Cap</option>
+                <option value="name">Sort: Name</option>
+                <option value="founded">Sort: Founded</option>
+              </select>
+            </div>
+          </div>
         </div>
-        <div class="view-controls">
-          <div class="search-wrapper">
-            <span class="search-icon">⌕</span>
-            <input
-              type="text"
-              id="search-input"
-              class="search-input"
-              placeholder="Search stablecoins or issuers…"
-            />
-          </div>
-          <div class="sort-wrapper">
-            <select id="sort-select" class="sort-select">
-              <option value="marketcap">Sort: Market Cap</option>
-              <option value="name">Sort: Name</option>
-              <option value="founded">Sort: Founded</option>
-            </select>
-          </div>
+
+        <!-- Issuer Grid -->
+        <div id="issuers-container" class="issuers-grid"></div>
+
+        <!-- No results -->
+        <div id="no-results" class="no-results hidden">
+          <div class="no-results-icon">⊘</div>
+          <p>No issuers or stablecoins match your search.</p>
         </div>
       </div>
 
-      <!-- Issuer Grid -->
-      <div id="issuers-container" class="issuers-grid"></div>
-
-      <!-- No results -->
-      <div id="no-results" class="no-results hidden">
-        <div class="no-results-icon">⊘</div>
-        <p>No issuers or stablecoins match your search.</p>
+      <!-- ===== RANKINGS VIEW ===== -->
+      <div id="rankings-view" class="hidden">
+        <div class="rankings-header">
+          <p class="rankings-desc">All stablecoins ranked by market cap. Click any row to view details.</p>
+        </div>
+        <div class="rankings-wrap">
+          <table class="rankings-table">
+            <thead>
+              <tr>
+                <th class="col-rank">#</th>
+                <th class="col-ticker">Ticker</th>
+                <th class="col-name">Name</th>
+                <th class="col-issuer">Issuer</th>
+                <th class="col-peg">Peg</th>
+                <th class="col-type">Type</th>
+                <th class="col-manager">Reserve Manager</th>
+                <th class="col-mcap">Market Cap</th>
+                <th class="col-share">% Share</th>
+              </tr>
+            </thead>
+            <tbody id="rankings-tbody"></tbody>
+          </table>
+        </div>
       </div>
+
     </main>
 
     <!-- Stablecoin Detail Modal -->

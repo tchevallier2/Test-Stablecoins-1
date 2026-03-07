@@ -26,6 +26,7 @@ const STABLECOIN_DATA = {
           launched: "2015-02-25",
           status: "active",
           reserves: "Cash & cash equivalents, US Treasuries, Gold",
+          reserveManager: "Cantor Fitzgerald, BNY Mellon",
           blockchains: [
             "Ethereum",
             "Tron",
@@ -48,6 +49,7 @@ const STABLECOIN_DATA = {
           launched: "2020-01-23",
           status: "active",
           reserves: "Physical gold held in Swiss vaults",
+          reserveManager: "Tether Holdings (self-custodied, Swiss vaults)",
           blockchains: ["Ethereum", "Tron"],
         },
         {
@@ -59,6 +61,7 @@ const STABLECOIN_DATA = {
           launched: "2025-02-01",
           status: "active",
           reserves: "USDT bridged via LayerZero OFT standard",
+          reserveManager: "Tether Holdings (USDT-backed)",
           blockchains: ["Arbitrum", "Optimism", "Unichain"],
           isNew: true,
         },
@@ -70,6 +73,7 @@ const STABLECOIN_DATA = {
           summary:
             "Tether introduced USDT0, a new omnichain version of USDT built on LayerZero's OFT standard, enabling seamless cross-chain transfers without fragmented liquidity.",
           tags: ["product", "cross-chain"],
+          url: "https://tether.to/en/news/",
         },
         {
           date: "2026-01-30",
@@ -77,6 +81,7 @@ const STABLECOIN_DATA = {
           summary:
             "Tether announced record profits driven primarily by US Treasury yields, with reserves now exceeding liabilities by over $8 billion.",
           tags: ["financials", "reserves"],
+          url: "https://tether.to/en/news/",
         },
         {
           date: "2025-12-10",
@@ -84,6 +89,7 @@ const STABLECOIN_DATA = {
           summary:
             "USDT on TON surpassed $1B in circulation within weeks of launch, driven by Telegram's built-in crypto wallet.",
           tags: ["expansion", "blockchain"],
+          url: "https://tether.to/en/news/",
         },
       ],
     },
@@ -109,6 +115,7 @@ const STABLECOIN_DATA = {
           launched: "2018-09-26",
           status: "active",
           reserves: "Cash and short-duration US Treasuries",
+          reserveManager: "BlackRock (Circle Reserve Fund)",
           blockchains: [
             "Ethereum",
             "Solana",
@@ -133,6 +140,7 @@ const STABLECOIN_DATA = {
           launched: "2022-06-30",
           status: "active",
           reserves: "Euro-denominated cash and equivalents",
+          reserveManager: "Circle / European regulated banks",
           blockchains: ["Ethereum", "Avalanche", "Solana", "Stellar", "Base"],
         },
       ],
@@ -143,6 +151,7 @@ const STABLECOIN_DATA = {
           summary:
             "Circle went public on the NYSE, becoming the first major stablecoin issuer to list publicly. The offering raised $624M for the company.",
           tags: ["IPO", "corporate"],
+          url: "https://www.circle.com/blog/",
         },
         {
           date: "2026-01-15",
@@ -150,6 +159,7 @@ const STABLECOIN_DATA = {
           summary:
             "USDC is now natively issued on Noble, a Cosmos appchain purpose-built for asset issuance, enabling fee-free transfers across 50+ IBC-connected chains.",
           tags: ["expansion", "Cosmos"],
+          url: "https://www.circle.com/blog/",
         },
         {
           date: "2025-11-20",
@@ -157,6 +167,7 @@ const STABLECOIN_DATA = {
           summary:
             "Circle's EURC became the go-to MiCA-compliant euro stablecoin, with several European banks integrating EURC for settlement.",
           tags: ["regulation", "Europe"],
+          url: "https://www.circle.com/blog/",
         },
       ],
     },
@@ -182,6 +193,7 @@ const STABLECOIN_DATA = {
           launched: "2024-08-20",
           status: "active",
           reserves: "Over-collateralized crypto assets + RWA",
+          reserveManager: "Sky Protocol (on-chain DAO governance)",
           blockchains: ["Ethereum", "Base", "Arbitrum", "Optimism"],
           isNew: true,
         },
@@ -194,6 +206,7 @@ const STABLECOIN_DATA = {
           launched: "2017-12-18",
           status: "active",
           reserves: "Over-collateralized crypto assets + RWA",
+          reserveManager: "Sky Protocol (on-chain DAO governance)",
           blockchains: [
             "Ethereum",
             "Polygon",
@@ -211,6 +224,7 @@ const STABLECOIN_DATA = {
           summary:
             "The Sky protocol hit a new TVL milestone with growing adoption of USDS across major DeFi protocols, aided by the Sky Savings Rate offering yield to USDS holders.",
           tags: ["TVL", "DeFi"],
+          url: "https://sky.money/",
         },
         {
           date: "2025-12-05",
@@ -218,6 +232,7 @@ const STABLECOIN_DATA = {
           summary:
             "Sky's endgame plan includes diversifying into tokenized real-world assets; BlackRock's BUIDL fund was approved as collateral, earning yield for the protocol.",
           tags: ["RWA", "partnership"],
+          url: "https://sky.money/",
         },
         {
           date: "2025-10-15",
@@ -225,6 +240,7 @@ const STABLECOIN_DATA = {
           summary:
             "The rebranding from MakerDAO to Sky is complete. Users can upgrade DAI to USDS 1:1 and earn Sky Savings Rate yield.",
           tags: ["rebrand", "product"],
+          url: "https://sky.money/",
         },
       ],
     },
@@ -250,6 +266,7 @@ const STABLECOIN_DATA = {
           launched: "2024-02-19",
           status: "active",
           reserves: "stETH + short ETH/BTC perp positions",
+          reserveManager: "Ethena Labs (delta-neutral, on-chain)",
           blockchains: ["Ethereum", "Arbitrum", "Optimism", "Base", "BNB Chain"],
         },
         {
@@ -261,6 +278,7 @@ const STABLECOIN_DATA = {
           launched: "2024-12-12",
           status: "active",
           reserves: "BlackRock BUIDL tokenized US Treasuries",
+          reserveManager: "BlackRock (BUIDL fund)",
           blockchains: ["Ethereum"],
           isNew: true,
         },
@@ -273,6 +291,7 @@ const STABLECOIN_DATA = {
           launched: "2025-04-01",
           status: "active",
           reserves: "USDe with built-in sUSDe yield accrual",
+          reserveManager: "Ethena Labs",
           blockchains: ["Ethereum"],
           isNew: true,
         },
@@ -284,6 +303,7 @@ const STABLECOIN_DATA = {
           summary:
             "Ethena's USDe has grown to become the 4th largest stablecoin by market cap, with demand driven by its sUSDe yield product offering 15-25% APY.",
           tags: ["growth", "yield"],
+          url: "https://ethena.fi/",
         },
         {
           date: "2026-01-20",
@@ -291,6 +311,7 @@ const STABLECOIN_DATA = {
           summary:
             "iUSDe targets institutional capital by wrapping sUSDe yield into a KYC-compliant instrument, integrating with traditional prime brokers.",
           tags: ["institutional", "product"],
+          url: "https://ethena.fi/",
         },
         {
           date: "2025-11-08",
@@ -298,6 +319,7 @@ const STABLECOIN_DATA = {
           summary:
             "USDtb serves as a risk-off collateral option for the Ethena protocol when perpetual funding rates turn negative, improving protocol resilience.",
           tags: ["product", "RWA"],
+          url: "https://ethena.fi/",
         },
       ],
     },
@@ -323,6 +345,7 @@ const STABLECOIN_DATA = {
           launched: "2023-08-07",
           status: "active",
           reserves: "US Treasury bills, cash equivalents",
+          reserveManager: "BlackRock (via Paxos)",
           blockchains: ["Ethereum", "Solana"],
           note: "Issued by Paxos on behalf of PayPal",
         },
@@ -335,6 +358,7 @@ const STABLECOIN_DATA = {
           launched: "2018-09-10",
           status: "active",
           reserves: "Cash and US Treasuries held at FDIC-insured banks",
+          reserveManager: "Paxos Trust (FDIC-insured banks)",
           blockchains: ["Ethereum"],
         },
         {
@@ -346,6 +370,7 @@ const STABLECOIN_DATA = {
           launched: "2019-09-10",
           status: "active",
           reserves: "Physical gold bars in Brink's vaults, London",
+          reserveManager: "Brink's (London vaults)",
           blockchains: ["Ethereum"],
         },
         {
@@ -357,6 +382,7 @@ const STABLECOIN_DATA = {
           launched: "2024-06-01",
           status: "active",
           reserves: "Cash and US Treasuries, yield passed to holders",
+          reserveManager: "Paxos Trust",
           blockchains: ["Ethereum"],
           isNew: true,
         },
@@ -368,6 +394,7 @@ const STABLECOIN_DATA = {
           summary:
             "Paxos secured its Singapore MAS license, enabling PYUSD distribution across Southeast Asia and positioning it as a key regulated dollar stablecoin in Asia-Pacific.",
           tags: ["regulation", "expansion"],
+          url: "https://paxos.com/blog/",
         },
         {
           date: "2026-01-08",
@@ -375,6 +402,7 @@ const STABLECOIN_DATA = {
           summary:
             "Solana's fast finality and low fees made it the dominant chain for PYUSD transactions, with PayPal reporting over 3M PYUSD transactions per month.",
           tags: ["Solana", "adoption"],
+          url: "https://paxos.com/blog/",
         },
         {
           date: "2025-10-22",
@@ -382,6 +410,7 @@ const STABLECOIN_DATA = {
           summary:
             "Unlike traditional stablecoins that keep yield internally, USDL distributes US Treasury yield directly to token holders every second via rebasing.",
           tags: ["product", "yield"],
+          url: "https://paxos.com/blog/",
         },
       ],
     },
@@ -407,6 +436,7 @@ const STABLECOIN_DATA = {
           launched: "2024-12-17",
           status: "active",
           reserves: "US Treasury bills, cash equivalents, money market funds",
+          reserveManager: "Multiple money market funds",
           blockchains: ["XRP Ledger", "Ethereum"],
           isNew: true,
         },
@@ -418,6 +448,7 @@ const STABLECOIN_DATA = {
           summary:
             "RLUSD is gaining traction in cross-border payment corridors, with several money transfer operators integrating it for USD settlement on the XRP Ledger's DEX.",
           tags: ["growth", "payments"],
+          url: "https://ripple.com/insights/",
         },
         {
           date: "2026-01-25",
@@ -425,6 +456,7 @@ const STABLECOIN_DATA = {
           summary:
             "Ripple's enterprise payment network now settles using RLUSD as the bridging currency, replacing XRP in corridors where regulatory clarity is needed.",
           tags: ["enterprise", "adoption"],
+          url: "https://ripple.com/insights/",
         },
         {
           date: "2025-12-17",
@@ -432,6 +464,7 @@ const STABLECOIN_DATA = {
           summary:
             "Ripple launched RLUSD after receiving approval from the New York Department of Financial Services, becoming one of the few stablecoins with direct NYDFS oversight.",
           tags: ["launch", "regulation"],
+          url: "https://ripple.com/insights/",
         },
       ],
     },
@@ -457,6 +490,7 @@ const STABLECOIN_DATA = {
           launched: "2023-06-01",
           status: "active",
           reserves: "Cash and short-term US Treasuries held in trust",
+          reserveManager: "First Digital Trust (Hong Kong)",
           blockchains: ["Ethereum", "BNB Chain", "Sui", "Solana"],
         },
       ],
@@ -467,6 +501,7 @@ const STABLECOIN_DATA = {
           summary:
             "First Digital partnered with the Sui Foundation to bring FDUSD to the Sui ecosystem, capitalizing on Sui's growing user base in Asia.",
           tags: ["expansion", "Sui"],
+          url: "https://firstdigitallabs.com/",
         },
         {
           date: "2025-09-15",
@@ -474,6 +509,7 @@ const STABLECOIN_DATA = {
           summary:
             "Binance's decision to maintain zero-fee spot trading for FDUSD pairs helped the stablecoin maintain its $2B+ market cap despite broader market competition.",
           tags: ["Binance", "trading"],
+          url: "https://firstdigitallabs.com/",
         },
         {
           date: "2025-07-20",
@@ -481,6 +517,7 @@ const STABLECOIN_DATA = {
           summary:
             "Following scrutiny over reserve transparency, First Digital began publishing monthly third-party attestation reports from a Big Four auditing firm.",
           tags: ["transparency", "reserves"],
+          url: "https://firstdigitallabs.com/",
         },
       ],
     },
@@ -506,6 +543,7 @@ const STABLECOIN_DATA = {
           launched: "2024-10-01",
           status: "active",
           reserves: "BlackRock BUIDL, FinresPBC US Treasuries",
+          reserveManager: "BlackRock (BUIDL) + FinresPBC",
           blockchains: ["Ethereum", "Arbitrum", "Fraxtal"],
           isNew: true,
         },
@@ -518,6 +556,7 @@ const STABLECOIN_DATA = {
           launched: "2020-12-22",
           status: "legacy",
           reserves: "USDC collateral + FXS algorithmic component",
+          reserveManager: "Frax Finance / Circle",
           blockchains: [
             "Ethereum",
             "Arbitrum",
@@ -537,6 +576,7 @@ const STABLECOIN_DATA = {
           launched: "2022-04-06",
           status: "active",
           reserves: "FRAX collateral with CPI oracle",
+          reserveManager: "Frax Finance (on-chain)",
           blockchains: ["Ethereum"],
         },
       ],
@@ -547,6 +587,7 @@ const STABLECOIN_DATA = {
           summary:
             "Frax Finance's pivot to fully-backed frxUSD with US Treasury RWA collateral has attracted institutional demand, with frxUSD growing to $850M.",
           tags: ["product", "RWA"],
+          url: "https://frax.finance/",
         },
         {
           date: "2025-12-01",
@@ -554,6 +595,7 @@ const STABLECOIN_DATA = {
           summary:
             "Frax's own Layer 2 blockchain Fraxtal uses frxETH for gas, but frxUSD plays a central role in its DeFi ecosystem with deep liquidity pools.",
           tags: ["L2", "Fraxtal"],
+          url: "https://frax.finance/",
         },
         {
           date: "2025-09-30",
@@ -561,6 +603,7 @@ const STABLECOIN_DATA = {
           summary:
             "Frax created FinresPBC, a Wyoming special purpose depository institution, to hold fiat reserves backing frxUSD, moving toward regulatory compliance.",
           tags: ["regulation", "reserves"],
+          url: "https://frax.finance/",
         },
       ],
     },
@@ -586,6 +629,7 @@ const STABLECOIN_DATA = {
           launched: "2023-08-01",
           status: "active",
           reserves: "Short-term US Treasuries and bank demand deposits",
+          reserveManager: "Ondo Finance (US Treasuries)",
           blockchains: ["Ethereum", "Solana", "Aptos", "Mantle", "Sui"],
         },
         {
@@ -597,6 +641,7 @@ const STABLECOIN_DATA = {
           launched: "2023-01-12",
           status: "active",
           reserves: "BlackRock's SHV ETF (short-term Treasuries)",
+          reserveManager: "BlackRock (SHV ETF)",
           blockchains: ["Ethereum", "Solana", "Polygon"],
         },
       ],
@@ -607,6 +652,7 @@ const STABLECOIN_DATA = {
           summary:
             "Ondo expanded USDY to Aptos and Mantle networks, with Mantle's treasury being one of the largest holders of USDY for yield management.",
           tags: ["expansion", "RWA"],
+          url: "https://ondo.finance/blog/",
         },
         {
           date: "2026-01-05",
@@ -615,6 +661,7 @@ const STABLECOIN_DATA = {
             "Ondo Chain will provide institutional-grade compliance features including on-chain KYC, controlled transfer permissions, and native RWA oracle infrastructure.",
           tags: ["product", "blockchain"],
           isNew: true,
+          url: "https://ondo.finance/blog/",
         },
         {
           date: "2025-11-15",
@@ -622,6 +669,7 @@ const STABLECOIN_DATA = {
           summary:
             "Growing demand for on-chain yield has propelled USDY to become one of the largest RWA-backed stablecoins, accessible to non-US accredited investors.",
           tags: ["growth", "yield"],
+          url: "https://ondo.finance/blog/",
         },
       ],
     },

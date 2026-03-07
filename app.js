@@ -9,6 +9,7 @@ const state = {
   sortBy: "marketcap",
   expandedIssuers: new Set(),
   theme: localStorage.getItem("theme") || "light",
+  activeView: "issuers", // "issuers" | "rankings"
 };
 
 // ---------- Utilities ----------
@@ -68,6 +69,21 @@ function renderStats() {
 
   const footerDate = document.getElementById("footer-date");
   if (footerDate) footerDate.textContent = formatDate(meta.lastUpdated);
+}
+
+// ---------- View Switcher ----------
+
+function switchView(view) {
+  state.activeView = view;
+
+  document.querySelectorAll(".page-tab").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.view === view);
+  });
+
+  document.getElementById("issuers-view").classList.toggle("hidden", view !== "issuers");
+  document.getElementById("rankings-view").classList.toggle("hidden", view !== "rankings");
+
+  if (view === "rankings") renderRankingsTable();
 }
 
 // ---------- Filter Tabs ----------
@@ -323,12 +339,16 @@ function buildNewsSection(newsItems) {
       .map((t) => `<span class="news-tag">${t}</span>`)
       .join("");
 
+    const headlineHtml = item.url
+      ? `<a href="${item.url}" target="_blank" rel="noopener noreferrer" class="news-headline-link">${item.headline}</a>`
+      : `<span>${item.headline}</span>`;
+
     el.innerHTML = `
       <div class="news-date-col">
         <div class="news-date">${formatDate(item.date)}</div>
       </div>
       <div class="news-content">
-        <div class="news-headline">${item.headline}</div>
+        <div class="news-headline">${headlineHtml}</div>
         <div class="news-summary">${item.summary}</div>
         <div class="news-tags">${tags}</div>
       </div>
@@ -338,6 +358,72 @@ function buildNewsSection(newsItems) {
 
   section.appendChild(list);
   return section;
+}
+
+// ---------- Rankings Table ----------
+
+function renderRankingsTable() {
+  const tbody = document.getElementById("rankings-tbody");
+  tbody.innerHTML = "";
+
+  // Flatten all stablecoins with issuer context
+  const allCoins = [];
+  STABLECOIN_DATA.issuers.forEach((issuer) => {
+    issuer.stablecoins.forEach((sc) => {
+      allCoins.push({ ...sc, issuerName: issuer.name, issuerId: issuer.id });
+    });
+  });
+
+  // Sort by market cap descending; null/0 values go to the bottom
+  allCoins.sort((a, b) => (b.marketCap || 0) - (a.marketCap || 0));
+
+  const totalMcap = allCoins.reduce((sum, c) => sum + (c.marketCap || 0), 0);
+
+  allCoins.forEach((coin, idx) => {
+    const hasMarketCap = coin.marketCap && coin.marketCap > 0;
+    const share = hasMarketCap ? (coin.marketCap / totalMcap) * 100 : 0;
+    const shareLabel = hasMarketCap
+      ? (share < 0.1 ? "<0.1%" : share.toFixed(1) + "%")
+      : "—";
+
+    const statusBadge = coin.isNew
+      ? `<span class="badge badge-new" style="margin-left:5px">New</span>`
+      : coin.status === "legacy"
+      ? `<span class="badge badge-legacy" style="margin-left:5px">Legacy</span>`
+      : "";
+
+    const tr = document.createElement("tr");
+    tr.classList.add("rankings-row");
+    tr.addEventListener("click", () => {
+      const issuer = STABLECOIN_DATA.issuers.find((i) => i.id === coin.issuerId);
+      if (issuer) openModal(coin, issuer);
+    });
+
+    tr.innerHTML = `
+      <td class="col-rank">${idx + 1}</td>
+      <td class="col-ticker">
+        <span class="rt-ticker">${coin.ticker}</span>${statusBadge}
+      </td>
+      <td class="col-name rt-name">${coin.name}</td>
+      <td class="col-issuer rt-issuer">${coin.issuerName}</td>
+      <td class="col-peg rt-peg">${coin.peg}</td>
+      <td class="col-type">
+        <span class="badge badge-type rt-type">${coin.type}</span>
+      </td>
+      <td class="col-manager rt-manager">${coin.reserveManager || "—"}</td>
+      <td class="col-mcap rt-mcap">${formatMarketCap(coin.marketCap)}</td>
+      <td class="col-share">
+        <div class="share-cell">
+          <div class="share-bar-wrap">
+            <div class="share-bar" style="width: ${Math.min(share, 100)}%"></div>
+          </div>
+          <span class="share-pct">${shareLabel}</span>
+        </div>
+      </td>
+    `;
+
+    tbody.appendChild(tr);
+  });
 }
 
 // ---------- Modal ----------
@@ -393,6 +479,12 @@ function openModal(sc, issuer) {
         <div class="modal-reserves">${sc.reserves}</div>
       </div>
 
+      ${sc.reserveManager ? `
+      <div class="modal-section">
+        <div class="modal-section-title">Reserve Manager</div>
+        <div class="modal-reserves">${sc.reserveManager}</div>
+      </div>` : ""}
+
       <div class="modal-section">
         <div class="modal-section-title">Supported Blockchains (${sc.blockchains.length})</div>
         <div class="modal-chains-grid">${chains}</div>
@@ -420,6 +512,11 @@ function closeModal() {
 function initEventListeners() {
   // Theme toggle
   document.getElementById("theme-toggle").addEventListener("click", toggleTheme);
+
+  // View switcher
+  document.querySelectorAll(".page-tab").forEach((btn) => {
+    btn.addEventListener("click", () => switchView(btn.dataset.view));
+  });
 
   // Search
   document.getElementById("search-input").addEventListener("input", (e) => {
@@ -453,7 +550,7 @@ function init() {
   renderStats();
   renderFilterTabs();
 
-  // Expand first issuer by default for a better first impression
+  // Expand first two issuers by default for a better first impression
   if (STABLECOIN_DATA.issuers.length > 0) {
     state.expandedIssuers.add(STABLECOIN_DATA.issuers[0].id);
     state.expandedIssuers.add(STABLECOIN_DATA.issuers[1].id);
