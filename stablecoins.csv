@@ -1,0 +1,22 @@
+Ticker,Name,Parent Issuer,Legal Issuer,Peg,Type,Market Cap (USD),Launched,Status,Reserves Description,Asset Manager,Custodian,Blockchains,Is New
+USDT,Tether USD,Tether Holdings,,USD,Fiat-backed,183965705860,2015-02-25,active,"Cash & cash equivalents, US Treasuries, Gold",Cantor Fitzgerald,BNY Mellon,"Ethereum, Tron, Solana, BNB Chain, Avalanche, Polygon, Optimism, Arbitrum, TON, Algorand",
+XAUT,Tether Gold,Tether Holdings,,Gold (troy oz),Commodity-backed,2903153461,2020-01-23,active,Physical gold held in Swiss vaults,Tether Holdings,"Tether Holdings (self-custodied, Swiss vaults)","Ethereum, Tron",
+USDT0,Tether USD0,Tether Holdings,,USD,Fiat-backed,,2025-02-01,active,USDT bridged via LayerZero OFT standard,Tether Holdings,—,"Arbitrum, Optimism, Unichain",yes
+USDC,USD Coin,Circle,,USD,Fiat-backed,77344636194,2018-09-26,active,Cash and short-duration US Treasuries,BlackRock (Circle Reserve Fund),BNY Mellon,"Ethereum, Solana, Avalanche, Arbitrum, Base, Optimism, Polygon, Noble, Stellar, Algorand, Hedera, NEAR",
+EURC,Euro Coin,Circle,,EUR,Fiat-backed,457698067,2022-06-30,active,Euro-denominated cash and equivalents,Circle,European regulated banks,"Ethereum, Avalanche, Solana, Stellar, Base",
+USDS,Sky Dollar,Sky (formerly MakerDAO),,USD,Crypto-collateralized,10736054938,2024-08-20,active,Over-collateralized crypto assets + RWA,Sky Protocol (on-chain DAO),Smart contracts (on-chain),"Ethereum, Base, Arbitrum, Optimism",yes
+DAI,Dai,Sky (formerly MakerDAO),,USD,Crypto-collateralized,4272250497,2017-12-18,active,Over-collateralized crypto assets + RWA,Sky Protocol (on-chain DAO),Smart contracts (on-chain),"Ethereum, Polygon, Optimism, Arbitrum, Avalanche, BNB Chain",
+USDe,Ethena USD,Ethena Labs,,USD,Synthetic / Delta-neutral,5947535333,2024-02-19,active,stETH + short ETH/BTC perp positions,Ethena Labs (delta-neutral),Copper / Fireblocks,"Ethereum, Arbitrum, Optimism, Base, BNB Chain",
+USDtb,Ethena USD Treasury-backed,Ethena Labs,Anchorage Digital Bank,USD,Fiat-backed (RWA),1400000000,2024-12-12,active,BlackRock BUIDL tokenized US Treasuries,BlackRock (BUIDL fund),Anchorage Digital Bank,Ethereum,yes
+iUSDe,Ethena Institutional USD,Ethena Labs,,USD,Yield-bearing,,2025-04-01,active,USDe with built-in sUSDe yield accrual,Ethena Labs,—,Ethereum,yes
+PYUSD,PayPal USD,Paxos Trust Company,,USD,Fiat-backed,4207496767,2023-08-07,active,"US Treasury bills, cash equivalents",BlackRock,Paxos Trust,"Ethereum, Solana",
+USDP,Pax Dollar,Paxos Trust Company,,USD,Fiat-backed,40564086,2018-09-10,active,Cash and US Treasuries held at FDIC-insured banks,Paxos Trust,FDIC-insured banks,Ethereum,
+PAXG,PAX Gold,Paxos Trust Company,,Gold (troy oz),Commodity-backed,2575549131,2019-09-10,active,"Physical gold bars in Brink's vaults, London",Paxos Trust,Brink's (London),Ethereum,
+USDL,Lift Dollar,Paxos Trust Company,,USD,Yield-bearing Fiat-backed,,2024-06-01,active,"Cash and US Treasuries, yield passed to holders",Paxos Trust,—,Ethereum,yes
+RLUSD,Ripple USD,Ripple Labs,,USD,Fiat-backed,1588706912,2024-12-17,active,"US Treasury bills, cash equivalents, money market funds",Multiple money market funds,—,"XRP Ledger, Ethereum",yes
+FDUSD,First Digital USD,First Digital Trust,,USD,Fiat-backed,373146429,2023-06-01,active,Cash and short-term US Treasuries held in trust,First Digital Trust,First Digital Trust (Hong Kong),"Ethereum, BNB Chain, Sui, Solana",
+frxUSD,Frax USD,Frax Finance,,USD,Fiat-backed (via RWA),116651866,2024-10-01,active,"BlackRock BUIDL, FinresPBC US Treasuries",BlackRock (BUIDL) + FinresPBC,FinresPBC,"Ethereum, Arbitrum, Fraxtal",yes
+FRAX,Frax,Frax Finance,,USD,Algorithmic / Hybrid,272958418,2020-12-22,legacy,USDC collateral + FXS algorithmic component,Frax Finance / Circle,—,"Ethereum, Arbitrum, Optimism, Polygon, Avalanche, BNB Chain, Fraxtal",
+FPI,Frax Price Index,Frax Finance,,CPI (inflation index),Algorithmic,,2022-04-06,active,FRAX collateral with CPI oracle,Frax Finance,On-chain (smart contracts),Ethereum,
+USDY,US Dollar Yield,Ondo Finance,,USD,Yield-bearing / RWA-backed,920457404,2023-08-01,active,Short-term US Treasuries and bank demand deposits,Ondo Finance,U.S. Bank N.A.,"Ethereum, Solana, Aptos, Mantle, Sui",
+OUSG,Ondo Short-Term US Gov. Bond Fund,Ondo Finance,,USD (yield-bearing),Tokenized Fund / RWA,650000000,2023-01-12,active,BlackRock's SHV ETF (short-term Treasuries),BlackRock (SHV ETF),Ondo Finance,"Ethereum, Solana, Polygon",
