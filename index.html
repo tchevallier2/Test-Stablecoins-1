@@ -56,6 +56,7 @@
         <div class="page-tabs">
           <button class="page-tab active" data-view="issuers">Issuer Dashboard</button>
           <button class="page-tab" data-view="rankings">Stablecoin League Table</button>
+          <button class="page-tab" data-view="by-type">Stablecoins by Type</button>
         </div>
         <div class="data-toolbar">
           <button class="toolbar-btn" id="export-btn" title="Download data as CSV (opens in Google Sheets)">
@@ -132,6 +133,11 @@
       </div>
 
     </main>
+
+      <!-- ===== BY TYPE VIEW ===== -->
+      <div id="by-type-view" class="hidden">
+        <div id="by-type-container"></div>
+      </div>
 
     <!-- Stablecoin Detail Modal -->
     <div id="modal-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true">

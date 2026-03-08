@@ -9,7 +9,7 @@ const state = {
   sortBy: "marketcap",
   expandedIssuers: new Set(),
   theme: localStorage.getItem("theme") || "light",
-  activeView: "issuers", // "issuers" | "rankings"
+  activeView: "issuers", // "issuers" | "rankings" | "by-type"
 };
 
 // ---------- Utilities ----------
@@ -82,8 +82,10 @@ function switchView(view) {
 
   document.getElementById("issuers-view").classList.toggle("hidden", view !== "issuers");
   document.getElementById("rankings-view").classList.toggle("hidden", view !== "rankings");
+  document.getElementById("by-type-view").classList.toggle("hidden", view !== "by-type");
 
   if (view === "rankings") renderRankingsTable();
+  if (view === "by-type") renderByTypeView();
 }
 
 // ---------- Filter Tabs ----------
@@ -358,6 +360,135 @@ function buildNewsSection(newsItems) {
 
   section.appendChild(list);
   return section;
+}
+
+// ---------- By Type View ----------
+
+const TYPE_GROUPS = [
+  {
+    label: "Payment Stablecoins",
+    description: "Fiat-collateralized stablecoins pegged to currencies",
+    match: (type) => /fiat|yield|rwa/i.test(type) && !/commodity/i.test(type),
+  },
+  {
+    label: "Crypto-Collateralized",
+    description: "Stablecoins backed by crypto assets, synthetic positions, or algorithmic mechanisms",
+    match: (type) => /crypto|algorithmic|synthetic|hybrid/i.test(type),
+  },
+  {
+    label: "Commodity-Backed",
+    description: "Stablecoins pegged to physical commodities such as gold",
+    match: (type) => /commodity/i.test(type),
+  },
+];
+
+function renderByTypeView() {
+  const container = document.getElementById("by-type-container");
+  container.innerHTML = "";
+
+  // Flatten all coins with issuer context
+  const allCoins = [];
+  STABLECOIN_DATA.issuers.forEach((issuer) => {
+    issuer.stablecoins.forEach((sc) => {
+      allCoins.push({ ...sc, issuerName: issuer.name, issuerId: issuer.id });
+    });
+  });
+
+  const totalMcap = allCoins.reduce((sum, c) => sum + (c.marketCap || 0), 0);
+
+  TYPE_GROUPS.forEach((group) => {
+    const coins = allCoins
+      .filter((c) => group.match(c.type))
+      .sort((a, b) => (b.marketCap || 0) - (a.marketCap || 0));
+
+    if (coins.length === 0) return;
+
+    const groupMcap = coins.reduce((sum, c) => sum + (c.marketCap || 0), 0);
+
+    const section = document.createElement("div");
+    section.className = "type-group";
+
+    section.innerHTML = `
+      <div class="type-group-header">
+        <div class="type-group-title-wrap">
+          <h2 class="type-group-title">${group.label}</h2>
+          <p class="type-group-desc">${group.description}</p>
+        </div>
+        <div class="type-group-stats">
+          <div class="type-group-mcap">${formatMarketCap(groupMcap)}</div>
+          <div class="type-group-count">${coins.length} stablecoin${coins.length !== 1 ? "s" : ""}</div>
+        </div>
+      </div>
+      <div class="rankings-wrap">
+        <table class="rankings-table">
+          <thead>
+            <tr>
+              <th class="col-rank">#</th>
+              <th class="col-ticker">Ticker</th>
+              <th class="col-name">Name</th>
+              <th class="col-issuer">Issuer</th>
+              <th class="col-peg">Peg</th>
+              <th class="col-manager">Asset Manager</th>
+              <th class="col-custodian">Custodian</th>
+              <th class="col-mcap">Market Cap</th>
+              <th class="col-share">% Share</th>
+            </tr>
+          </thead>
+          <tbody class="type-tbody"></tbody>
+        </table>
+      </div>
+    `;
+
+    const tbody = section.querySelector(".type-tbody");
+
+    coins.forEach((coin, idx) => {
+      const hasMarketCap = coin.marketCap && coin.marketCap > 0;
+      const share = hasMarketCap ? (coin.marketCap / totalMcap) * 100 : 0;
+      const shareLabel = hasMarketCap
+        ? (share < 0.1 ? "<0.1%" : share.toFixed(1) + "%")
+        : "—";
+
+      const statusBadge = coin.isNew
+        ? `<span class="badge badge-new" style="margin-left:5px">New</span>`
+        : coin.status === "legacy"
+        ? `<span class="badge badge-legacy" style="margin-left:5px">Legacy</span>`
+        : "";
+
+      const displayIssuer = coin.issuer || coin.issuerName;
+
+      const tr = document.createElement("tr");
+      tr.className = "rankings-row";
+      tr.addEventListener("click", () => {
+        const issuer = STABLECOIN_DATA.issuers.find((i) => i.id === coin.issuerId);
+        if (issuer) openModal(coin, issuer);
+      });
+
+      tr.innerHTML = `
+        <td class="col-rank">${idx + 1}</td>
+        <td class="col-ticker">
+          <span class="rt-ticker">${coin.ticker}</span>${statusBadge}
+        </td>
+        <td class="col-name"><span class="rt-name">${coin.name}</span></td>
+        <td class="col-issuer rt-issuer">${displayIssuer}</td>
+        <td class="col-peg rt-peg">${coin.peg}</td>
+        <td class="col-manager rt-manager">${coin.reserveManager || "—"}</td>
+        <td class="col-custodian rt-custodian">${coin.custodian || "—"}</td>
+        <td class="col-mcap rt-mcap">${formatMarketCap(coin.marketCap)}</td>
+        <td class="col-share">
+          <div class="share-cell">
+            <div class="share-bar-wrap">
+              <div class="share-bar" style="width: ${Math.min(share, 100)}%"></div>
+            </div>
+            <span class="share-pct">${shareLabel}</span>
+          </div>
+        </td>
+      `;
+
+      tbody.appendChild(tr);
+    });
+
+    container.appendChild(section);
+  });
 }
 
 // ---------- Rankings Table ----------
@@ -695,7 +826,8 @@ function recomputeAndRender() {
   renderStats();
   renderFilterTabs();
   renderIssuers();
-  renderRankingsTable();
+  if (state.activeView === "rankings") renderRankingsTable();
+  if (state.activeView === "by-type") renderByTypeView();
 }
 
 function handleImport(file) {
