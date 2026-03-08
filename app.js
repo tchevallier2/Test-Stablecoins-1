@@ -607,6 +607,97 @@ function downloadCSV() {
 
 // ---------- Import (CSV or Excel) ----------
 
+// Shared: update existing coin OR insert new one into its parent issuer.
+// Returns the number of coins processed.
+function processCoinsFromRows(rows) {
+  if (rows.length < 2) return 0;
+  const h = rows[0];
+  const col = (name) => h.indexOf(name);
+  let count = 0;
+
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    const ticker = String(row[col("Ticker")] ?? "").trim();
+    if (!ticker) continue;
+
+    // --- Try to find & update an existing stablecoin ---
+    let found = false;
+    for (const issuer of STABLECOIN_DATA.issuers) {
+      const sc = issuer.stablecoins.find((s) => s.ticker === ticker);
+      if (!sc) continue;
+
+      const set = (field, idx, transform) => {
+        const val = row[idx];
+        if (val !== undefined && val !== "") sc[field] = transform ? transform(val) : val;
+      };
+      set("name", col("Name"));
+      set("marketCap", col("Market Cap (USD)"), (v) => Number(v) || null);
+      set("type", col("Type"));
+      set("status", col("Status"));
+      set("reserveManager", col("Asset Manager"));
+      set("custodian", col("Custodian"));
+      set("reserves", col("Reserves Description"));
+      set("peg", col("Peg"));
+
+      const legalIssuer = row[col("Legal Issuer")];
+      if (legalIssuer && legalIssuer !== issuer.name) sc.issuer = legalIssuer;
+      else if (legalIssuer === issuer.name) delete sc.issuer;
+
+      const chains = row[col("Blockchains")];
+      if (chains) sc.blockchains = String(chains).split(",").map((c) => c.trim()).filter(Boolean);
+
+      count++;
+      found = true;
+      break;
+    }
+
+    if (found) continue;
+
+    // --- Insert new stablecoin into its parent issuer ---
+    const parentName = String(row[col("Parent Issuer")] ?? "").trim();
+    const parentIssuer = STABLECOIN_DATA.issuers.find((iss) => iss.name === parentName);
+    if (!parentIssuer) continue; // unknown issuer — skip
+
+    const mcapRaw = row[col("Market Cap (USD)")];
+    const legalIssuer = String(row[col("Legal Issuer")] ?? "").trim();
+    const chains = row[col("Blockchains")];
+
+    const newCoin = {
+      ticker,
+      name: String(row[col("Name")] || ticker),
+      peg: String(row[col("Peg")] || "USD"),
+      type: String(row[col("Type")] || "fiat-backed"),
+      status: String(row[col("Status")] || "active"),
+      marketCap: mcapRaw !== undefined && mcapRaw !== "" ? (Number(mcapRaw) || null) : null,
+      reserveManager: row[col("Asset Manager")] || null,
+      custodian: row[col("Custodian")] || null,
+      reserves: row[col("Reserves Description")] || null,
+      launched: row[col("Launched")] ? String(row[col("Launched")]) : null,
+      blockchains: chains ? String(chains).split(",").map((c) => c.trim()).filter(Boolean) : [],
+      isNew: row[col("Is New")] === "Yes",
+    };
+    if (legalIssuer && legalIssuer !== parentName) newCoin.issuer = legalIssuer;
+
+    parentIssuer.stablecoins.push(newCoin);
+    count++;
+  }
+
+  return count;
+}
+
+function recomputeAndRender() {
+  STABLECOIN_DATA.stats.totalMarketCap = STABLECOIN_DATA.issuers.reduce(
+    (sum, iss) => sum + iss.stablecoins.reduce((s, sc) => s + (sc.marketCap || 0), 0), 0
+  );
+  STABLECOIN_DATA.stats.uniqueBlockchains = [
+    ...new Set(STABLECOIN_DATA.issuers.flatMap((iss) => iss.stablecoins.flatMap((sc) => sc.blockchains))),
+  ];
+  renderStats();
+  renderFilterTabs();
+  renderIssuers();
+  renderRankingsTable();
+}
+
 function handleImport(file) {
   const isCSV = file.name.toLowerCase().endsWith(".csv");
   if (isCSV) {
@@ -624,72 +715,11 @@ function handleCSVImport(file) {
   const reader = new FileReader();
   reader.onload = (e) => {
     try {
-      // Use XLSX to parse CSV: handles UTF-8 BOM, quoted fields, and
-      // multiline cells that a line-by-line parser would mishandle.
       const wb = XLSX.read(e.target.result, { type: "string" });
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
-
-      if (rows.length < 2) throw new Error("Empty file");
-
-      const h = rows[0];
-      const col = (name) => h.indexOf(name);
-      let updatedCoins = 0;
-
-      for (let i = 1; i < rows.length; i++) {
-        const row = rows[i];
-        const ticker = row[col("Ticker")];
-        if (!ticker) continue;
-
-        for (const issuer of STABLECOIN_DATA.issuers) {
-          const sc = issuer.stablecoins.find((s) => s.ticker === ticker);
-          if (!sc) continue;
-
-          const set = (field, idx, transform) => {
-            const val = row[idx];
-            if (val !== undefined && val !== "") {
-              sc[field] = transform ? transform(val) : val;
-            }
-          };
-
-          set("name", col("Name"));
-          set("marketCap", col("Market Cap (USD)"), (v) => (v === "" ? null : Number(v) || null));
-          set("type", col("Type"));
-          set("status", col("Status"));
-          set("reserveManager", col("Asset Manager"));
-          set("custodian", col("Custodian"));
-          set("reserves", col("Reserves Description"));
-          set("peg", col("Peg"));
-
-          const legalIssuer = row[col("Legal Issuer")];
-          if (legalIssuer && legalIssuer !== issuer.name) {
-            sc.issuer = legalIssuer;
-          } else if (legalIssuer === issuer.name) {
-            delete sc.issuer;
-          }
-
-          const chains = row[col("Blockchains")];
-          if (chains) {
-            sc.blockchains = String(chains).split(",").map((c) => c.trim()).filter(Boolean);
-          }
-
-          updatedCoins++;
-          break;
-        }
-      }
-
-      STABLECOIN_DATA.stats.totalMarketCap = STABLECOIN_DATA.issuers.reduce(
-        (sum, iss) => sum + iss.stablecoins.reduce((s, sc) => s + (sc.marketCap || 0), 0), 0
-      );
-      STABLECOIN_DATA.stats.uniqueBlockchains = [
-        ...new Set(STABLECOIN_DATA.issuers.flatMap((iss) => iss.stablecoins.flatMap((sc) => sc.blockchains))),
-      ];
-
-      renderStats();
-      renderFilterTabs();
-      renderIssuers();
-      renderRankingsTable();
-      showImportBanner(updatedCoins, 0, 0);
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 });
+      const count = processCoinsFromRows(rows);
+      recomputeAndRender();
+      showImportBanner(count, 0, 0);
     } catch (err) {
       alert(`Import failed: ${err.message}\n\nMake sure you are uploading a CSV exported from this dashboard.`);
     }
@@ -716,54 +746,7 @@ function handleExcelUpload(file) {
       const wsCoins = wb.Sheets["Stablecoins"];
       if (wsCoins) {
         const rows = XLSX.utils.sheet_to_json(wsCoins, { header: 1 });
-        if (rows.length >= 2) {
-          const h = rows[0];
-          const col = (name) => h.indexOf(name);
-
-          for (let i = 1; i < rows.length; i++) {
-            const row = rows[i];
-            const ticker = row[col("Ticker")];
-            if (!ticker) continue;
-
-            for (const issuer of STABLECOIN_DATA.issuers) {
-              const sc = issuer.stablecoins.find((s) => s.ticker === ticker);
-              if (!sc) continue;
-
-              const set = (field, idx, transform) => {
-                const val = row[idx];
-                if (val !== undefined && val !== "") {
-                  sc[field] = transform ? transform(val) : val;
-                }
-              };
-
-              set("name", col("Name"));
-              set("marketCap", col("Market Cap (USD)"), (v) => (v === "" ? null : Number(v) || null));
-              set("type", col("Type"));
-              set("status", col("Status"));
-              set("reserveManager", col("Asset Manager"));
-              set("custodian", col("Custodian"));
-              set("reserves", col("Reserves Description"));
-              set("peg", col("Peg"));
-
-              // Legal issuer override
-              const legalIssuer = row[col("Legal Issuer")];
-              if (legalIssuer && legalIssuer !== issuer.name) {
-                sc.issuer = legalIssuer;
-              } else if (legalIssuer === issuer.name) {
-                delete sc.issuer;
-              }
-
-              // Blockchains
-              const chains = row[col("Blockchains")];
-              if (chains) {
-                sc.blockchains = chains.split(",").map((c) => c.trim()).filter(Boolean);
-              }
-
-              updatedCoins++;
-              break;
-            }
-          }
-        }
+        updatedCoins = processCoinsFromRows(rows);
       }
 
       // --- Update Issuers sheet ---
@@ -828,19 +811,7 @@ function handleExcelUpload(file) {
         }
       }
 
-      // Recompute stats
-      STABLECOIN_DATA.stats.totalMarketCap = STABLECOIN_DATA.issuers.reduce(
-        (sum, iss) => sum + iss.stablecoins.reduce((s, sc) => s + (sc.marketCap || 0), 0), 0
-      );
-      STABLECOIN_DATA.stats.uniqueBlockchains = [
-        ...new Set(STABLECOIN_DATA.issuers.flatMap((iss) => iss.stablecoins.flatMap((sc) => sc.blockchains))),
-      ];
-
-      // Re-render both views so rankings table always reflects imported data
-      renderStats();
-      renderFilterTabs();
-      renderIssuers();
-      renderRankingsTable();
+      recomputeAndRender();
 
       showImportBanner(updatedCoins, updatedIssuers, updatedNews);
     } catch (err) {
