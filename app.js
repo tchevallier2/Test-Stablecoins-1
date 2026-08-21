@@ -10,7 +10,11 @@ const state = {
   searchQuery: "",
   sortBy: "marketcap",
   expandedIssuers: new Set(),
-  theme: localStorage.getItem("theme") || "light",
+  // Respect the visitor's system preference on a first visit; once they use
+  // the toggle, their stored choice wins.
+  theme:
+    localStorage.getItem("theme") ||
+    (window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light"),
   activeView: "issuers",
   rankingsSort: { key: "marketcap", dir: "desc" },
   trendRange: 0, // days; 0 = all available history
