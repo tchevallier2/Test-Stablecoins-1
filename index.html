@@ -4,9 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Stablecoin Dashboard</title>
+    <meta
+      name="description"
+      content="Track the stablecoin ecosystem: issuers, market caps, reserve managers, custodians, peg stability and market structure."
+    />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+
     <!-- Header -->
     <header class="site-header">
       <div class="container header-inner">
@@ -19,7 +25,7 @@
         </div>
         <div class="header-meta">
           <span class="last-updated" id="last-updated"></span>
-          <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+          <button class="theme-toggle" id="theme-toggle" title="Toggle theme" aria-label="Toggle colour theme">
             <span class="theme-icon">☀</span>
           </button>
         </div>
@@ -27,11 +33,12 @@
     </header>
 
     <!-- Market Overview Stats -->
-    <section class="stats-bar">
+    <section class="stats-bar" aria-label="Market overview">
       <div class="container stats-grid">
-        <div class="stat-card">
+        <div class="stat-card stat-card-hero">
           <div class="stat-label">Total Market Cap</div>
           <div class="stat-value" id="stat-market-cap">—</div>
+          <div class="stat-delta" id="stat-market-cap-delta"></div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Stablecoin Issuers</div>
@@ -49,14 +56,16 @@
     </section>
 
     <!-- Main Content -->
-    <main class="container main-content">
+    <main class="container main-content" id="main-content">
 
       <!-- Top bar: view switcher + data tools -->
       <div class="content-header">
-        <div class="page-tabs">
-          <button class="page-tab active" data-view="issuers">Issuer Dashboard</button>
-          <button class="page-tab" data-view="rankings">Stablecoin League Table</button>
-          <button class="page-tab" data-view="by-type">Stablecoins by Type</button>
+        <div class="page-tabs" role="tablist" aria-label="Dashboard views">
+          <button class="page-tab active" data-view="issuers" role="tab" aria-selected="true">Issuer Dashboard</button>
+          <button class="page-tab" data-view="rankings" role="tab" aria-selected="false">Stablecoin League Table</button>
+          <button class="page-tab" data-view="by-type" role="tab" aria-selected="false">Stablecoins by Type</button>
+          <button class="page-tab" data-view="trends" role="tab" aria-selected="false">Trends</button>
+          <button class="page-tab" data-view="structure" role="tab" aria-selected="false">Market Structure</button>
         </div>
         <div class="data-toolbar">
           <button class="toolbar-btn" id="export-btn" title="Download data as CSV (opens in Google Sheets)">
@@ -70,12 +79,10 @@
       </div>
 
       <!-- ===== ISSUERS VIEW ===== -->
-      <div id="issuers-view">
+      <div id="issuers-view" role="tabpanel">
         <!-- Controls -->
         <div class="controls-bar">
-          <div class="filter-tabs" id="filter-tabs">
-            <button class="tab-btn active" data-filter="all">All Issuers</button>
-          </div>
+          <div class="filter-tabs" id="filter-tabs"></div>
           <div class="view-controls">
             <div class="search-wrapper">
               <span class="search-icon">⌕</span>
@@ -84,10 +91,11 @@
                 id="search-input"
                 class="search-input"
                 placeholder="Search stablecoins or issuers…"
+                aria-label="Search stablecoins or issuers"
               />
             </div>
             <div class="sort-wrapper">
-              <select id="sort-select" class="sort-select">
+              <select id="sort-select" class="sort-select" aria-label="Sort issuers">
                 <option value="marketcap">Sort: Market Cap</option>
                 <option value="name">Sort: Name</option>
                 <option value="founded">Sort: Founded</option>
@@ -107,23 +115,27 @@
       </div>
 
       <!-- ===== RANKINGS VIEW ===== -->
-      <div id="rankings-view" class="hidden">
+      <div id="rankings-view" class="hidden" role="tabpanel">
         <div class="rankings-header">
-          <p class="rankings-desc">All stablecoins ranked by market cap. Click any row to view details.</p>
+          <p class="rankings-desc">
+            All stablecoins ranked by market cap. Click any row for details, or a column header to re-sort.
+          </p>
         </div>
         <div class="rankings-wrap">
           <table class="rankings-table">
             <thead>
-              <tr>
+              <tr id="rankings-head">
                 <th class="col-rank">#</th>
-                <th class="col-ticker">Ticker</th>
-                <th class="col-name">Name</th>
-                <th class="col-issuer">Issuer</th>
+                <th class="col-ticker sortable" data-sort="ticker">Ticker</th>
+                <th class="col-name sortable" data-sort="name">Name</th>
+                <th class="col-issuer sortable" data-sort="issuer">Issuer</th>
                 <th class="col-peg">Peg</th>
-                <th class="col-type">Type</th>
+                <th class="col-type sortable" data-sort="type">Type</th>
                 <th class="col-manager">Asset Manager</th>
                 <th class="col-custodian">Custodian</th>
-                <th class="col-mcap">Market Cap</th>
+                <th class="col-trend">30d Trend</th>
+                <th class="col-change sortable" data-sort="change">30d</th>
+                <th class="col-mcap sortable" data-sort="marketcap">Market Cap</th>
                 <th class="col-share">% Share</th>
               </tr>
             </thead>
@@ -132,15 +144,61 @@
         </div>
       </div>
 
-    </main>
-
       <!-- ===== BY TYPE VIEW ===== -->
-      <div id="by-type-view" class="hidden">
+      <div id="by-type-view" class="hidden" role="tabpanel">
         <div id="by-type-container"></div>
       </div>
 
+      <!-- ===== TRENDS VIEW ===== -->
+      <div id="trends-view" class="hidden" role="tabpanel">
+        <div class="view-intro">
+          <div>
+            <h2 class="view-title">Market trends</h2>
+            <p class="view-desc" id="trends-range-desc"></p>
+          </div>
+          <div class="range-picker" id="range-picker" role="group" aria-label="Time range">
+            <button class="range-btn" data-range="7">7d</button>
+            <button class="range-btn" data-range="30">30d</button>
+            <button class="range-btn active" data-range="0">All</button>
+          </div>
+        </div>
+
+        <div class="delta-grid" id="delta-grid"></div>
+
+        <div class="chart-card" id="chart-total"></div>
+
+        <div class="chart-card" id="chart-indexed"></div>
+
+        <div class="chart-grid-2">
+          <div class="chart-card" id="chart-gainers"></div>
+          <div class="chart-card" id="chart-losers"></div>
+        </div>
+      </div>
+
+      <!-- ===== MARKET STRUCTURE VIEW ===== -->
+      <div id="structure-view" class="hidden" role="tabpanel">
+        <div class="view-intro">
+          <div>
+            <h2 class="view-title">Market structure</h2>
+            <p class="view-desc">
+              How concentrated the market is, where stablecoins are deployed, and how tightly they hold their pegs.
+            </p>
+          </div>
+        </div>
+
+        <div class="delta-grid" id="concentration-grid"></div>
+
+        <div class="chart-card" id="chart-peg"></div>
+
+        <div class="chart-card" id="chart-chains"></div>
+
+        <div class="chart-card" id="chart-types"></div>
+      </div>
+
+    </main>
+
     <!-- Stablecoin Detail Modal -->
-    <div id="modal-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div id="modal-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <div class="modal" id="modal-content">
         <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
         <div id="modal-body"></div>
@@ -157,6 +215,7 @@
 
     <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="data.js"></script>
+    <script src="charts.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

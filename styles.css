@@ -1307,3 +1307,685 @@ body {
     text-align: left;
   }
 }
+
+/* ============================================================
+   Charts & analytics views
+   ============================================================ */
+
+/* ---------- Chart palette ----------
+   Validated for colour-vision deficiency against both surfaces
+   (adjacent-pair CVD ΔE >= 8, normal-vision ΔE >= 15). The dark steps are
+   the same eight hues re-stepped for the dark surface, not an automatic
+   inversion. Slot order is the safety mechanism — do not reshuffle without
+   re-validating. */
+:root {
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-6: #008300;
+
+  --diverge-pos: #2a78d6;
+  --diverge-neg: #d03b3b;
+
+  --chart-grid: #e1e0d9;
+  --chart-axis: #c3c2b7;
+  --chart-ink-muted: #898781;
+
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-serious: #ec835a;
+  --status-critical: #d03b3b;
+
+  --up: #0f7a3d;
+  --down: #c0392b;
+}
+
+[data-theme="dark"] {
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-6: #008300;
+
+  --diverge-pos: #3987e5;
+  --diverge-neg: #e66767;
+
+  --chart-grid: #2c2c2a;
+  --chart-axis: #383835;
+  --chart-ink-muted: #898781;
+
+  --up: #4ade80;
+  --down: #f87171;
+}
+
+/* ---------- Accessibility helpers ---------- */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 10px 16px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 0 0 var(--radius-sm) 0;
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  left: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* ---------- View intro & range picker ---------- */
+
+.view-intro {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.view-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.view-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  max-width: 68ch;
+}
+
+.range-picker {
+  display: inline-flex;
+  gap: 4px;
+  background: var(--bg-surface-2);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.range-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+
+.range-btn:hover {
+  color: var(--text-primary);
+}
+
+.range-btn.active {
+  background: var(--bg-surface);
+  color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---------- Delta / metric tiles ---------- */
+
+.delta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.delta-tile {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.delta-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.delta-value {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-top: 6px;
+  line-height: 1.15;
+}
+
+.delta-value.up,
+.stat-delta.up,
+.sc-change.up,
+.col-change.up,
+.modal-info-value.up {
+  color: var(--up);
+}
+
+.delta-value.down,
+.stat-delta.down,
+.sc-change.down,
+.col-change.down,
+.modal-info-value.down {
+  color: var(--down);
+}
+
+.delta-value.muted {
+  color: var(--text-muted);
+}
+
+.delta-abs {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.stat-delta {
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 4px;
+  min-height: 16px;
+}
+
+/* The stats bar sits on a dark plane in both themes, so its delta needs
+   colours that clear contrast there rather than the page tokens. */
+.stats-bar .stat-delta.up {
+  color: #4ade80;
+}
+
+.stats-bar .stat-delta.down {
+  color: #f87171;
+}
+
+/* ---------- Chart cards ---------- */
+
+.chart-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px 22px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 20px;
+}
+
+.chart-card:empty {
+  display: none;
+}
+
+.chart-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+.chart-figure {
+  margin: 0;
+}
+
+.chart-caption {
+  display: block;
+  margin-bottom: 14px;
+}
+
+.chart-title {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.chart-subtitle {
+  display: block;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 3px;
+  max-width: 78ch;
+  line-height: 1.5;
+}
+
+.chart-plot {
+  position: relative;
+  width: 100%;
+}
+
+/* Charts are drawn at the container's real pixel size, so the SVG carries its
+   own height and CSS must not override it — that is what keeps label text at
+   its true size instead of scaling down with the viewBox. */
+.chart-svg {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+.chart-empty {
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 28px 0;
+  text-align: center;
+}
+
+/* ---------- Chart marks ---------- */
+
+.chart-gridline {
+  stroke: var(--chart-grid);
+  stroke-width: 1;
+}
+
+.chart-baseline {
+  stroke: var(--chart-axis);
+  stroke-width: 1;
+}
+
+.chart-line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.chart-area {
+  fill-opacity: 0.1;
+  stroke: none;
+}
+
+.chart-end-dot,
+.chart-hover-dot {
+  stroke: var(--bg-surface);
+  stroke-width: 2;
+}
+
+.chart-crosshair {
+  stroke: var(--chart-axis);
+  stroke-width: 1;
+  pointer-events: none;
+}
+
+.chart-bar {
+  transition: opacity var(--transition);
+}
+
+.chart-hit {
+  cursor: pointer;
+}
+
+.chart-hit:hover ~ .chart-bar {
+  opacity: 0.85;
+}
+
+/* Text in charts wears text tokens, never a series colour. */
+.chart-axis-label {
+  fill: var(--chart-ink-muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-row-label {
+  fill: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.chart-value-label {
+  fill: var(--text-primary);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-end-label {
+  fill: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ---------- Legend ---------- */
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ---------- Tooltip ---------- */
+
+.chart-tooltip {
+  position: absolute;
+  pointer-events: none;
+  z-index: 5;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  padding: 9px 12px;
+  font-size: 12px;
+  min-width: 130px;
+  transition: opacity 0.1s ease;
+}
+
+.tt-date {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tt-value {
+  font-size: 16px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.tt-meta {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.tt-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 5px;
+}
+
+.tt-row-name {
+  font-weight: 600;
+  flex: 1;
+}
+
+.tt-row-val {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
+/* ---------- Notice ---------- */
+
+.notice {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  grid-column: 1 / -1;
+}
+
+.notice-icon {
+  font-size: 18px;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+.notice-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.notice-body {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 3px;
+  line-height: 1.55;
+}
+
+.notice-body code {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-size: 11px;
+}
+
+/* ---------- Sparklines & table additions ---------- */
+
+.sparkline {
+  display: block;
+}
+
+.sc-trend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0 2px;
+  min-height: 22px;
+}
+
+.sc-change {
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.sc-change-period {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.col-trend {
+  width: 84px;
+}
+
+.col-change {
+  text-align: right;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.col-change.muted {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.rankings-table th.col-change {
+  text-align: right;
+}
+
+.rankings-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.rankings-table th.sortable:hover {
+  color: var(--text-secondary);
+}
+
+.rankings-table th.sortable::after {
+  content: "";
+  display: inline-block;
+  margin-left: 5px;
+  opacity: 0.45;
+}
+
+.rankings-table th.sortable[aria-sort="descending"]::after {
+  content: "▾";
+  opacity: 1;
+}
+
+.rankings-table th.sortable[aria-sort="ascending"]::after {
+  content: "▴";
+  opacity: 1;
+}
+
+.rankings-table th.sorted {
+  color: var(--accent);
+}
+
+/* ---------- Peg status ---------- */
+
+.peg-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 7px;
+  vertical-align: middle;
+}
+
+.peg-dot.good {
+  background: var(--status-good);
+}
+.peg-dot.warning {
+  background: var(--status-warning);
+}
+.peg-dot.serious {
+  background: var(--status-serious);
+}
+.peg-dot.critical {
+  background: var(--status-critical);
+}
+
+.modal-chart {
+  margin-top: 6px;
+}
+
+.modal-chart .chart-caption {
+  display: none;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 720px) {
+  .chart-grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .view-intro {
+    align-items: flex-start;
+  }
+
+  .delta-value {
+    font-size: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+.chart-leader {
+  stroke: var(--chart-axis);
+  stroke-width: 1;
+  fill: none;
+}
+
+/* The league table gained a trend and a change column; give it a floor width
+   so columns keep their shape and the wrapper scrolls instead of crushing
+   names into two-character wraps. */
+.rankings-table {
+  min-width: 1240px;
+}
+
+.rankings-table .col-name {
+  min-width: 150px;
+}
+
+.rankings-table .rt-name {
+  max-width: none;
+}
+
+.rankings-table .col-issuer,
+.rankings-table .col-manager,
+.rankings-table .col-custodian {
+  min-width: 130px;
+}
+
+/* ---------- Narrow screens ----------
+   The tab strip is width:fit-content with no wrap, so on a phone it forced the
+   whole page wider than the viewport (781px at a 390px width). Constrain it to
+   the container and let the strip itself scroll instead of the document. */
+.page-tabs {
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.page-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.page-tab {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .content-header {
+    align-items: stretch;
+  }
+
+  .data-toolbar {
+    justify-content: flex-start;
+  }
+
+  .page-tab {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+}
+
+/* A value label that had to move inside its bar sits on the series colour, so
+   it takes white ink to stay legible in both themes. */
+.chart-value-inside {
+  fill: #ffffff;
+}

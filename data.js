@@ -1,7 +1,7 @@
 const STABLECOIN_DATA = {
   "meta": {
     "lastUpdated": "2026-08-19",
-    "totalMarketCap": 288203346729
+    "totalMarketCap": 287553346729
   },
   "issuers": [
     {
@@ -741,23 +741,6 @@ const STABLECOIN_DATA = {
         },
         {
           "ticker": "OUSG",
-          "name": "Ondo Short-Term US Gov. Bond Fund",
-          "peg": "USD (yield-bearing)",
-          "marketCap": 650000000,
-          "type": "Tokenized Fund / RWA",
-          "launched": "2023-01-12",
-          "status": "active",
-          "reserves": "BlackRock's SHV ETF (short-term Treasuries)",
-          "reserveManager": "BlackRock (SHV ETF)",
-          "custodian": "Ondo Finance",
-          "blockchains": [
-            "Ethereum",
-            "Solana",
-            "Polygon"
-          ]
-        },
-        {
-          "ticker": "OUSG2223",
           "name": "Ondo Short-Term US Gov. Bond Fund",
           "peg": "USD (yield-bearing)",
           "marketCap": 650000000,

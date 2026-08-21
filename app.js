@@ -3,22 +3,38 @@
    ============================================================ */
 
 // ---------- State ----------
+const VIEWS = ["issuers", "rankings", "by-type", "trends", "structure"];
+
 const state = {
   activeFilter: "all",
   searchQuery: "",
   sortBy: "marketcap",
   expandedIssuers: new Set(),
   theme: localStorage.getItem("theme") || "light",
-  activeView: "issuers", // "issuers" | "rankings" | "by-type"
+  activeView: "issuers",
+  rankingsSort: { key: "marketcap", dir: "desc" },
+  trendRange: 0, // days; 0 = all available history
 };
+
+// Daily snapshots from history.json; null until loaded, and stays null when
+// the file cannot be fetched (e.g. opened over file://).
+let HISTORY = null;
 
 // ---------- Utilities ----------
 
 function formatMarketCap(value) {
-  if (!value) return "N/A";
-  if (value >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;
-  if (value >= 1e6) return `$${(value / 1e6).toFixed(0)}M`;
-  return `$${value.toLocaleString()}`;
+  if (value === null || value === undefined || value === "") return "N/A";
+  const n = Number(value);
+  if (!Number.isFinite(n)) return "N/A";
+  if (n === 0) return "$0";
+  if (Math.abs(n) >= 1e9) return `$${(n / 1e9).toFixed(1)}B`;
+  if (Math.abs(n) >= 1e6) return `$${(n / 1e6).toFixed(0)}M`;
+  return `$${n.toLocaleString()}`;
+}
+
+function formatPercent(value, digits = 2) {
+  if (value === null || value === undefined || !Number.isFinite(value)) return "—";
+  return `${value >= 0 ? "+" : ""}${value.toFixed(digits)}%`;
 }
 
 function formatDate(dateStr) {
@@ -36,6 +52,130 @@ function getRegBadgeClass(status) {
 
 function computeIssuerMarketCap(issuer) {
   return issuer.stablecoins.reduce((sum, sc) => sum + (sc.marketCap || 0), 0);
+}
+
+/** Every stablecoin, flattened, with its issuer context attached. */
+function allCoins() {
+  return STABLECOIN_DATA.issuers.flatMap((issuer) =>
+    issuer.stablecoins.map((sc) => ({
+      ...sc,
+      issuerName: issuer.name,
+      issuerId: issuer.id,
+    }))
+  );
+}
+
+// ---------- History & analytics ----------
+
+async function loadHistory() {
+  try {
+    const res = await fetch("history.json", { cache: "no-cache" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const payload = await res.json();
+    if (Array.isArray(payload?.snapshots) && payload.snapshots.length) {
+      HISTORY = payload;
+    }
+  } catch (err) {
+    // Most often this is a file:// origin blocking fetch. The trend views
+    // explain the situation rather than rendering empty charts.
+    console.warn("History unavailable:", err.message);
+    HISTORY = null;
+  }
+}
+
+/** Snapshots trimmed to the active range (0 = everything we have). */
+function snapshots(days = state.trendRange) {
+  if (!HISTORY) return [];
+  const all = HISTORY.snapshots;
+  if (!days || days <= 0) return all;
+  return all.slice(Math.max(0, all.length - days - 1));
+}
+
+/** Percentage change in total market cap over the trailing `days`. */
+function totalChangeOver(days) {
+  if (!HISTORY) return null;
+  const all = HISTORY.snapshots;
+  if (all.length < 2) return null;
+  const latest = all[all.length - 1];
+  const idx = Math.max(0, all.length - 1 - days);
+  const past = all[idx];
+  if (!past?.totalMarketCap || past === latest) return null;
+  return (latest.totalMarketCap / past.totalMarketCap - 1) * 100;
+}
+
+/** Daily market cap series for one ticker within the active range. */
+function coinSeries(ticker, days = state.trendRange) {
+  return snapshots(days)
+    .filter((s) => s.coins[ticker] !== undefined)
+    .map((s) => ({ date: s.date, value: s.coins[ticker] }));
+}
+
+function coinChangeOver(ticker, days) {
+  const series = coinSeries(ticker, days);
+  if (series.length < 2) return null;
+  const first = series[0].value;
+  if (!first) return null;
+  return (series[series.length - 1].value / first - 1) * 100;
+}
+
+/**
+ * Herfindahl–Hirschman Index over market shares, expressed on the 0–10,000
+ * scale that competition regulators use. Above 2,500 counts as highly
+ * concentrated.
+ */
+function herfindahlIndex() {
+  const caps = allCoins()
+    .map((c) => c.marketCap || 0)
+    .filter((c) => c > 0);
+  const total = caps.reduce((a, b) => a + b, 0);
+  if (!total) return null;
+  return caps.reduce((sum, cap) => sum + Math.pow((cap / total) * 100, 2), 0);
+}
+
+function topNShare(n) {
+  const caps = allCoins()
+    .map((c) => c.marketCap || 0)
+    .filter((c) => c > 0)
+    .sort((a, b) => b - a);
+  const total = caps.reduce((a, b) => a + b, 0);
+  if (!total) return null;
+  return (caps.slice(0, n).reduce((a, b) => a + b, 0) / total) * 100;
+}
+
+/**
+ * Market cap reachable on each chain.
+ *
+ * A coin is counted on every chain it is issued on, because the dataset
+ * records deployments rather than per-chain supply. The totals therefore
+ * overlap and deliberately sum to more than the market — this measures each
+ * chain's addressable stablecoin value, not its share.
+ */
+function chainDistribution() {
+  const byChain = new Map();
+  for (const coin of allCoins()) {
+    for (const chain of coin.blockchains || []) {
+      const entry = byChain.get(chain) || { chain, marketCap: 0, coins: [] };
+      entry.marketCap += coin.marketCap || 0;
+      entry.coins.push(coin.ticker);
+      byChain.set(chain, entry);
+    }
+  }
+  return [...byChain.values()].sort((a, b) => b.marketCap - a.marketCap);
+}
+
+/** Coins that report a live price, with their distance from peg in bps. */
+function pegDeviations() {
+  return allCoins()
+    .filter((c) => Number.isFinite(c.pegDeviationBps))
+    .sort((a, b) => Math.abs(b.pegDeviationBps) - Math.abs(a.pegDeviationBps));
+}
+
+function pegSeverity(bps) {
+  const abs = Math.abs(bps);
+  if (abs >= 100) return { level: "critical", label: "Depegged" };
+  if (abs >= 50) return { level: "serious", label: "Under strain" };
+  if (abs >= 25) return { level: "warning", label: "Drifting" };
+  return { level: "good", label: "On peg" };
 }
 
 // ---------- Theme ----------
@@ -69,23 +209,53 @@ function renderStats() {
 
   const footerDate = document.getElementById("footer-date");
   if (footerDate) footerDate.textContent = formatDate(meta.lastUpdated);
+
+  renderHeadlineDelta();
+}
+
+/** 24h change beneath the hero figure, once history is available. */
+function renderHeadlineDelta() {
+  const el = document.getElementById("stat-market-cap-delta");
+  if (!el) return;
+
+  const change = totalChangeOver(1);
+  if (change === null) {
+    el.textContent = "";
+    return;
+  }
+  const dir = change >= 0 ? "up" : "down";
+  el.className = `stat-delta ${dir}`;
+  el.textContent = `${change >= 0 ? "▲" : "▼"} ${formatPercent(change)} · 24h`;
 }
 
 // ---------- View Switcher ----------
 
-function switchView(view) {
+function switchView(view, { updateHash = true } = {}) {
+  if (!VIEWS.includes(view)) view = "issuers";
   state.activeView = view;
 
   document.querySelectorAll(".page-tab").forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.view === view);
+    const active = btn.dataset.view === view;
+    btn.classList.toggle("active", active);
+    btn.setAttribute("aria-selected", String(active));
   });
 
-  document.getElementById("issuers-view").classList.toggle("hidden", view !== "issuers");
-  document.getElementById("rankings-view").classList.toggle("hidden", view !== "rankings");
-  document.getElementById("by-type-view").classList.toggle("hidden", view !== "by-type");
+  for (const name of VIEWS) {
+    const panel = document.getElementById(`${name}-view`);
+    if (panel) panel.classList.toggle("hidden", name !== view);
+  }
 
   if (view === "rankings") renderRankingsTable();
   if (view === "by-type") renderByTypeView();
+  if (view === "trends") renderTrendsView();
+  if (view === "structure") renderStructureView();
+
+  if (updateHash) {
+    const target = `#${view}`;
+    if (window.location.hash !== target) {
+      history.replaceState(null, "", target);
+    }
+  }
 }
 
 // ---------- Filter Tabs ----------
@@ -199,25 +369,32 @@ function buildIssuerCard(issuer) {
 
   const regClass = getRegBadgeClass(issuer.regulatoryStatus);
 
+  // logoColor lands in a style attribute, so it is restricted to a colour
+  // literal rather than escaped — an imported CSV must not be able to inject
+  // arbitrary declarations here.
+  const safeColor = /^#[0-9a-f]{3,8}$|^[a-z]+$/i.test(issuer.logoColor || "")
+    ? issuer.logoColor
+    : "#2775CA";
+
   header.innerHTML = `
     <div class="issuer-header-left">
-      <div class="issuer-logo" style="background-color: ${issuer.logoColor}">
-        ${issuer.logo}
+      <div class="issuer-logo" style="background-color: ${safeColor}">
+        ${escapeHtml(issuer.logo)}
       </div>
       <div class="issuer-title">
-        <div class="issuer-name">${issuer.name}</div>
+        <div class="issuer-name">${escapeHtml(issuer.name)}</div>
         <div class="issuer-meta">
-          <span class="issuer-hq">📍 ${issuer.headquarters}</span>
-          <span class="reg-badge ${regClass}">${issuer.regulatoryStatus}</span>
-          <span class="issuer-hq">Est. ${issuer.founded}</span>
+          <span class="issuer-hq">📍 ${escapeHtml(issuer.headquarters)}</span>
+          <span class="reg-badge ${regClass}">${escapeHtml(issuer.regulatoryStatus)}</span>
+          <span class="issuer-hq">Est. ${escapeHtml(issuer.founded)}</span>
         </div>
-        <div class="issuer-desc">${issuer.description}</div>
+        <div class="issuer-desc">${escapeHtml(issuer.description)}</div>
       </div>
     </div>
     <div class="issuer-header-right">
       <div class="issuer-total-mcap">
         <div class="mcap-label">Market Cap</div>
-        <div class="mcap-value">${formatMarketCap(totalMcap)}</div>
+        <div class="mcap-value">${escapeHtml(formatMarketCap(totalMcap))}</div>
       </div>
       <div class="collapse-icon">▾</div>
     </div>
@@ -284,7 +461,7 @@ function buildStablecoinCard(sc, issuer) {
   const moreCount = chains.length - maxChains;
 
   const chainChips = visibleChains
-    .map((c) => `<span class="chain-chip">${c}</span>`)
+    .map((c) => `<span class="chain-chip">${escapeHtml(c)}</span>`)
     .join("");
   const moreChip =
     moreCount > 0
@@ -294,22 +471,32 @@ function buildStablecoinCard(sc, issuer) {
   const badges = [];
   if (sc.isNew) badges.push(`<span class="badge badge-new">New</span>`);
   if (sc.status === "legacy") badges.push(`<span class="badge badge-legacy">Legacy</span>`);
-  badges.push(`<span class="badge badge-type">${sc.type}</span>`);
+  badges.push(`<span class="badge badge-type">${escapeHtml(sc.type)}</span>`);
+
+  const change30 = coinChangeOver(sc.ticker, 30);
+  const trend = coinSeries(sc.ticker, 30).map((p) => p.value);
+  const changeHtml =
+    change30 === null
+      ? ""
+      : `<span class="sc-change ${change30 >= 0 ? "up" : "down"}">${escapeHtml(
+          formatPercent(change30, 1)
+        )} <span class="sc-change-period">30d</span></span>`;
 
   card.innerHTML = `
     <div class="sc-card-top">
       <div class="sc-ticker-wrap">
         <div>
-          <div class="sc-ticker">${sc.ticker}</div>
-          <div class="sc-name">${sc.name}</div>
+          <div class="sc-ticker">${escapeHtml(sc.ticker)}</div>
+          <div class="sc-name">${escapeHtml(sc.name)}</div>
         </div>
       </div>
       <div class="sc-badges">${badges.join("")}</div>
     </div>
     <div class="sc-mcap">
-      ${formatMarketCap(sc.marketCap)}
+      ${escapeHtml(formatMarketCap(sc.marketCap))}
       <span class="sc-mcap-label">market cap</span>
     </div>
+    <div class="sc-trend-row">${sparklineSvg(trend)}${changeHtml}</div>
     <div class="chains-label">Blockchains</div>
     <div class="chains-list">
       ${chainChips}${moreChip}
@@ -338,20 +525,25 @@ function buildNewsSection(newsItems) {
     el.className = "news-item";
 
     const tags = (item.tags || [])
-      .map((t) => `<span class="news-tag">${t}</span>`)
+      .map((t) => `<span class="news-tag">${escapeHtml(t)}</span>`)
       .join("");
 
-    const headlineHtml = item.url
-      ? `<a href="${item.url}" target="_blank" rel="noopener noreferrer" class="news-headline-link">${item.headline}</a>`
-      : `<span>${item.headline}</span>`;
+    // Only http(s) links are rendered as anchors, so an imported sheet cannot
+    // smuggle in a javascript: URL.
+    const safeUrl = /^https?:\/\//i.test(item.url || "") ? item.url : null;
+    const headlineHtml = safeUrl
+      ? `<a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener noreferrer" class="news-headline-link">${escapeHtml(
+          item.headline
+        )}</a>`
+      : `<span>${escapeHtml(item.headline)}</span>`;
 
     el.innerHTML = `
       <div class="news-date-col">
-        <div class="news-date">${formatDate(item.date)}</div>
+        <div class="news-date">${escapeHtml(formatDate(item.date))}</div>
       </div>
       <div class="news-content">
         <div class="news-headline">${headlineHtml}</div>
-        <div class="news-summary">${item.summary}</div>
+        <div class="news-summary">${escapeHtml(item.summary)}</div>
         <div class="news-tags">${tags}</div>
       </div>
     `;
@@ -386,18 +578,11 @@ function renderByTypeView() {
   const container = document.getElementById("by-type-container");
   container.innerHTML = "";
 
-  // Flatten all coins with issuer context
-  const allCoins = [];
-  STABLECOIN_DATA.issuers.forEach((issuer) => {
-    issuer.stablecoins.forEach((sc) => {
-      allCoins.push({ ...sc, issuerName: issuer.name, issuerId: issuer.id });
-    });
-  });
-
-  const totalMcap = allCoins.reduce((sum, c) => sum + (c.marketCap || 0), 0);
+  const coinsWithIssuer = allCoins();
+  const totalMcap = coinsWithIssuer.reduce((sum, c) => sum + (c.marketCap || 0), 0);
 
   TYPE_GROUPS.forEach((group) => {
-    const coins = allCoins
+    const coins = coinsWithIssuer
       .filter((c) => group.match(c.type))
       .sort((a, b) => (b.marketCap || 0) - (a.marketCap || 0));
 
@@ -411,11 +596,11 @@ function renderByTypeView() {
     section.innerHTML = `
       <div class="type-group-header">
         <div class="type-group-title-wrap">
-          <h2 class="type-group-title">${group.label}</h2>
-          <p class="type-group-desc">${group.description}</p>
+          <h2 class="type-group-title">${escapeHtml(group.label)}</h2>
+          <p class="type-group-desc">${escapeHtml(group.description)}</p>
         </div>
         <div class="type-group-stats">
-          <div class="type-group-mcap">${formatMarketCap(groupMcap)}</div>
+          <div class="type-group-mcap">${escapeHtml(formatMarketCap(groupMcap))}</div>
           <div class="type-group-count">${coins.length} stablecoin${coins.length !== 1 ? "s" : ""}</div>
         </div>
       </div>
@@ -466,20 +651,20 @@ function renderByTypeView() {
       tr.innerHTML = `
         <td class="col-rank">${idx + 1}</td>
         <td class="col-ticker">
-          <span class="rt-ticker">${coin.ticker}</span>${statusBadge}
+          <span class="rt-ticker">${escapeHtml(coin.ticker)}</span>${statusBadge}
         </td>
-        <td class="col-name"><span class="rt-name">${coin.name}</span></td>
-        <td class="col-issuer rt-issuer">${displayIssuer}</td>
-        <td class="col-peg rt-peg">${coin.peg}</td>
-        <td class="col-manager rt-manager">${coin.reserveManager || "—"}</td>
-        <td class="col-custodian rt-custodian">${coin.custodian || "—"}</td>
-        <td class="col-mcap rt-mcap">${formatMarketCap(coin.marketCap)}</td>
+        <td class="col-name"><span class="rt-name">${escapeHtml(coin.name)}</span></td>
+        <td class="col-issuer rt-issuer">${escapeHtml(displayIssuer)}</td>
+        <td class="col-peg rt-peg">${escapeHtml(coin.peg)}</td>
+        <td class="col-manager rt-manager">${escapeHtml(coin.reserveManager || "—")}</td>
+        <td class="col-custodian rt-custodian">${escapeHtml(coin.custodian || "—")}</td>
+        <td class="col-mcap rt-mcap">${escapeHtml(formatMarketCap(coin.marketCap))}</td>
         <td class="col-share">
           <div class="share-cell">
             <div class="share-bar-wrap">
               <div class="share-bar" style="width: ${Math.min(share, 100)}%"></div>
             </div>
-            <span class="share-pct">${shareLabel}</span>
+            <span class="share-pct">${escapeHtml(shareLabel)}</span>
           </div>
         </td>
       `;
@@ -493,28 +678,46 @@ function renderByTypeView() {
 
 // ---------- Rankings Table ----------
 
+const RANKINGS_SORTERS = {
+  marketcap: (a, b) => (b.marketCap || 0) - (a.marketCap || 0),
+  ticker: (a, b) => a.ticker.localeCompare(b.ticker),
+  name: (a, b) => a.name.localeCompare(b.name),
+  issuer: (a, b) =>
+    (a.issuer || a.issuerName).localeCompare(b.issuer || b.issuerName),
+  type: (a, b) => (a.type || "").localeCompare(b.type || ""),
+  change: (a, b) => (b.change30d ?? -Infinity) - (a.change30d ?? -Infinity),
+};
+
 function renderRankingsTable() {
   const tbody = document.getElementById("rankings-tbody");
   tbody.innerHTML = "";
 
-  // Flatten all stablecoins with issuer context
-  const allCoins = [];
-  STABLECOIN_DATA.issuers.forEach((issuer) => {
-    issuer.stablecoins.forEach((sc) => {
-      allCoins.push({ ...sc, issuerName: issuer.name, issuerId: issuer.id });
-    });
+  const coins = allCoins().map((coin) => ({
+    ...coin,
+    change30d: coinChangeOver(coin.ticker, 30),
+    series: coinSeries(coin.ticker, 30).map((p) => p.value),
+  }));
+
+  const { key, dir } = state.rankingsSort;
+  const sorter = RANKINGS_SORTERS[key] || RANKINGS_SORTERS.marketcap;
+  coins.sort(sorter);
+  if (dir === "asc") coins.reverse();
+
+  const totalMcap = coins.reduce((sum, c) => sum + (c.marketCap || 0), 0);
+
+  document.querySelectorAll("#rankings-head .sortable").forEach((th) => {
+    const active = th.dataset.sort === key;
+    th.classList.toggle("sorted", active);
+    th.setAttribute("aria-sort", active ? (dir === "asc" ? "ascending" : "descending") : "none");
   });
 
-  // Sort by market cap descending; null/0 values go to the bottom
-  allCoins.sort((a, b) => (b.marketCap || 0) - (a.marketCap || 0));
-
-  const totalMcap = allCoins.reduce((sum, c) => sum + (c.marketCap || 0), 0);
-
-  allCoins.forEach((coin, idx) => {
+  coins.forEach((coin, idx) => {
     const hasMarketCap = coin.marketCap && coin.marketCap > 0;
     const share = hasMarketCap ? (coin.marketCap / totalMcap) * 100 : 0;
     const shareLabel = hasMarketCap
-      ? (share < 0.1 ? "<0.1%" : share.toFixed(1) + "%")
+      ? share < 0.1
+        ? "<0.1%"
+        : share.toFixed(1) + "%"
       : "—";
 
     const statusBadge = coin.isNew
@@ -526,33 +729,53 @@ function renderRankingsTable() {
     // coin.issuer overrides the parent issuer name (e.g. USDtb → Anchorage Digital Bank)
     const displayIssuer = coin.issuer || coin.issuerName;
 
+    const changeClass =
+      coin.change30d === null || coin.change30d === undefined
+        ? "muted"
+        : coin.change30d >= 0
+        ? "up"
+        : "down";
+
     const tr = document.createElement("tr");
     tr.classList.add("rankings-row");
+    tr.tabIndex = 0;
     tr.addEventListener("click", () => {
       const issuer = STABLECOIN_DATA.issuers.find((i) => i.id === coin.issuerId);
       if (issuer) openModal(coin, issuer);
+    });
+    tr.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        tr.click();
+      }
     });
 
     tr.innerHTML = `
       <td class="col-rank">${idx + 1}</td>
       <td class="col-ticker">
-        <span class="rt-ticker">${coin.ticker}</span>${statusBadge}
+        <span class="rt-ticker">${escapeHtml(coin.ticker)}</span>${statusBadge}
       </td>
-      <td class="col-name"><span class="rt-name">${coin.name}</span></td>
-      <td class="col-issuer rt-issuer">${displayIssuer}</td>
-      <td class="col-peg rt-peg">${coin.peg}</td>
+      <td class="col-name"><span class="rt-name">${escapeHtml(coin.name)}</span></td>
+      <td class="col-issuer rt-issuer">${escapeHtml(displayIssuer)}</td>
+      <td class="col-peg rt-peg">${escapeHtml(coin.peg)}</td>
       <td class="col-type">
-        <span class="badge badge-type rt-type">${coin.type}</span>
+        <span class="badge badge-type rt-type">${escapeHtml(coin.type)}</span>
       </td>
-      <td class="col-manager rt-manager">${coin.reserveManager || "—"}</td>
-      <td class="col-custodian rt-custodian">${coin.custodian || "—"}</td>
-      <td class="col-mcap rt-mcap">${formatMarketCap(coin.marketCap)}</td>
+      <td class="col-manager rt-manager">${escapeHtml(coin.reserveManager || "—")}</td>
+      <td class="col-custodian rt-custodian">${escapeHtml(coin.custodian || "—")}</td>
+      <td class="col-trend">${sparklineSvg(coin.series)}</td>
+      <td class="col-change ${changeClass}">${escapeHtml(
+      coin.change30d === null || coin.change30d === undefined
+        ? "—"
+        : formatPercent(coin.change30d, 1)
+    )}</td>
+      <td class="col-mcap rt-mcap">${escapeHtml(formatMarketCap(coin.marketCap))}</td>
       <td class="col-share">
         <div class="share-cell">
           <div class="share-bar-wrap">
             <div class="share-bar" style="width: ${Math.min(share, 100)}%"></div>
           </div>
-          <span class="share-pct">${shareLabel}</span>
+          <span class="share-pct">${escapeHtml(shareLabel)}</span>
         </div>
       </td>
     `;
@@ -561,85 +784,432 @@ function renderRankingsTable() {
   });
 }
 
+// ---------- Trends View ----------
+
+function notice(title, bodyHtml) {
+  return `
+    <div class="notice">
+      <span class="notice-icon">◔</span>
+      <div>
+        <p class="notice-title">${escapeHtml(title)}</p>
+        <p class="notice-body">${bodyHtml}</p>
+      </div>
+    </div>`;
+}
+
+function historyNotice(message) {
+  return notice(
+    message,
+    `Daily snapshots live in <code>history.json</code>. If you opened this page
+     directly from disk, the browser blocks reading it — serve the folder over
+     HTTP instead (<code>python3 -m http.server</code>).`
+  );
+}
+
+function renderTrendsView() {
+  const deltaGrid = document.getElementById("delta-grid");
+  const rangeDesc = document.getElementById("trends-range-desc");
+
+  if (!HISTORY) {
+    deltaGrid.innerHTML = historyNotice("Historical data is not available.");
+    ["chart-total", "chart-indexed", "chart-gainers", "chart-losers"].forEach((id) => {
+      document.getElementById(id).innerHTML = "";
+    });
+    rangeDesc.textContent = "";
+    return;
+  }
+
+  const points = snapshots().map((s) => ({ date: s.date, value: s.totalMarketCap }));
+  const windowDays = points.length - 1;
+
+  rangeDesc.textContent = `${points.length} daily snapshots, ${shortDate(
+    points[0].date
+  )} → ${shortDate(points[points.length - 1].date)}.`;
+
+  // ---- Delta tiles ----
+  const periods = [
+    { label: "24 hours", days: 1 },
+    { label: "7 days", days: 7 },
+    { label: "30 days", days: 30 },
+    { label: "Full history", days: HISTORY.snapshots.length - 1 },
+  ];
+
+  deltaGrid.innerHTML = periods
+    .map(({ label, days }) => {
+      const change = totalChangeOver(days);
+      if (change === null) {
+        return `<div class="delta-tile"><div class="delta-label">${escapeHtml(
+          label
+        )}</div><div class="delta-value muted">—</div></div>`;
+      }
+      const dir = change >= 0 ? "up" : "down";
+      const latest = HISTORY.snapshots[HISTORY.snapshots.length - 1].totalMarketCap;
+      const abs = latest - latest / (1 + change / 100);
+      return `
+        <div class="delta-tile">
+          <div class="delta-label">${escapeHtml(label)}</div>
+          <div class="delta-value ${dir}">${escapeHtml(formatPercent(change))}</div>
+          <div class="delta-abs">${change >= 0 ? "+" : "−"}${escapeHtml(
+        formatMarketCap(Math.abs(abs))
+      )}</div>
+        </div>`;
+    })
+    .join("");
+
+  // ---- Total market cap over time ----
+  renderTimeSeries(document.getElementById("chart-total"), {
+    points,
+    title: "Total stablecoin market cap",
+    subtitle: `Sum of all tracked stablecoins, daily. Hover for any day's value.`,
+    format: formatMarketCap,
+  });
+
+  // ---- Indexed comparison of the largest coins ----
+  const top = allCoins()
+    .filter((c) => c.marketCap > 0)
+    .sort((a, b) => b.marketCap - a.marketCap)
+    .slice(0, 6)
+    .map((c) => ({ name: c.ticker, points: coinSeries(c.ticker) }))
+    .filter((s) => s.points.length >= 2);
+
+  renderIndexedLines(document.getElementById("chart-indexed"), {
+    series: top,
+    title: "Relative performance of the six largest stablecoins",
+    subtitle:
+      "Each coin indexed to 100 at the start of the range, so coins of very different size share one axis.",
+  });
+
+  // ---- Growth leaders and laggards ----
+  const changes = allCoins()
+    .filter((c) => c.marketCap > 0)
+    .map((c) => ({
+      label: c.ticker,
+      value: coinChangeOver(c.ticker, windowDays),
+      detail: `${c.name} · ${formatMarketCap(c.marketCap)}`,
+    }))
+    .filter((c) => c.value !== null && Number.isFinite(c.value));
+
+  changes.sort((a, b) => b.value - a.value);
+  const rangeLabel = state.trendRange ? `${state.trendRange}-day` : "full-history";
+
+  renderDivergingBars(document.getElementById("chart-gainers"), {
+    items: changes.slice(0, 6),
+    title: "Fastest growing",
+    subtitle: `Largest ${rangeLabel} market cap gains.`,
+  });
+
+  renderDivergingBars(document.getElementById("chart-losers"), {
+    items: changes.slice(-6).reverse(),
+    title: "Largest contractions",
+    subtitle: `Largest ${rangeLabel} market cap declines.`,
+  });
+}
+
+// ---------- Market Structure View ----------
+
+function renderStructureView() {
+  const grid = document.getElementById("concentration-grid");
+  const coins = allCoins().filter((c) => c.marketCap > 0);
+  const total = coins.reduce((sum, c) => sum + c.marketCap, 0);
+  const hhi = herfindahlIndex();
+  const largest = coins.slice().sort((a, b) => b.marketCap - a.marketCap)[0];
+
+  const hhiVerdict =
+    hhi === null ? "" : hhi > 2500 ? "Highly concentrated" : hhi > 1500 ? "Moderately concentrated" : "Competitive";
+
+  grid.innerHTML = `
+    <div class="delta-tile">
+      <div class="delta-label">Herfindahl index</div>
+      <div class="delta-value">${hhi === null ? "—" : escapeHtml(Math.round(hhi).toLocaleString())}</div>
+      <div class="delta-abs">${escapeHtml(hhiVerdict)}</div>
+    </div>
+    <div class="delta-tile">
+      <div class="delta-label">Top 3 share</div>
+      <div class="delta-value">${escapeHtml((topNShare(3) ?? 0).toFixed(1))}%</div>
+      <div class="delta-abs">of tracked market cap</div>
+    </div>
+    <div class="delta-tile">
+      <div class="delta-label">Largest stablecoin</div>
+      <div class="delta-value">${escapeHtml(largest?.ticker ?? "—")}</div>
+      <div class="delta-abs">${escapeHtml(
+        largest ? `${((largest.marketCap / total) * 100).toFixed(1)}% of market` : ""
+      )}</div>
+    </div>
+    <div class="delta-tile">
+      <div class="delta-label">Coins with live pricing</div>
+      <div class="delta-value">${escapeHtml(String(pegDeviations().length))}</div>
+      <div class="delta-abs">of ${escapeHtml(String(coins.length))} tracked</div>
+    </div>
+  `;
+
+  // ---- Peg stability ----
+  const pegs = pegDeviations();
+  const pegCard = document.getElementById("chart-peg");
+
+  if (!pegs.length) {
+    pegCard.innerHTML = `
+      <div class="chart-figure">
+        <figcaption class="chart-caption">
+          <span class="chart-title">Peg stability</span>
+          <span class="chart-subtitle">How far each stablecoin trades from its own peg.</span>
+        </figcaption>
+        ${notice(
+          "Live pricing has not been collected yet.",
+          `Peg deviation is measured against each coin's own unit — dollars for
+           USD-pegged coins, euros for <strong>EURC</strong>, a troy ounce for
+           <strong>PAXG</strong> and <strong>XAUT</strong>. Prices arrive with the
+           next scheduled data run, and this panel fills in automatically.`
+        )}
+      </div>`;
+  } else {
+    renderDivergingBars(pegCard, {
+      items: pegs.map((c) => ({
+        label: c.ticker,
+        value: c.pegDeviationBps,
+        detail: `${c.name} · ${pegSeverity(c.pegDeviationBps).label} · priced in ${
+          c.priceUnit || "USD"
+        }`,
+      })),
+      title: "Peg stability",
+      subtitle:
+        "Distance from peg in basis points. Each coin is priced in its own peg unit, so gold- and euro-backed coins are judged fairly.",
+      unit: " bps",
+    });
+  }
+
+  // ---- Chain distribution ----
+  const chains = chainDistribution().slice(0, 12);
+  renderBars(document.getElementById("chart-chains"), {
+    items: chains.map((c) => ({
+      label: c.chain,
+      value: c.marketCap,
+      detail: `${c.coins.length} stablecoin${c.coins.length !== 1 ? "s" : ""}: ${c.coins
+        .slice(0, 6)
+        .join(", ")}${c.coins.length > 6 ? "…" : ""}`,
+    })),
+    title: "Stablecoin value deployed per chain",
+    subtitle:
+      "A coin counts on every chain it is issued on, so these overlap and sum to more than the market — this is each chain's addressable value, not its share.",
+    format: formatMarketCap,
+  });
+
+  // ---- Composition by type ----
+  const byType = new Map();
+  for (const coin of coins) {
+    const entry = byType.get(coin.type) || { type: coin.type, marketCap: 0, count: 0 };
+    entry.marketCap += coin.marketCap;
+    entry.count++;
+    byType.set(coin.type, entry);
+  }
+
+  renderBars(document.getElementById("chart-types"), {
+    items: [...byType.values()]
+      .sort((a, b) => b.marketCap - a.marketCap)
+      .map((t) => ({
+        label: t.type,
+        value: t.marketCap,
+        detail: `${t.count} coin${t.count !== 1 ? "s" : ""} · ${(
+          (t.marketCap / total) *
+          100
+        ).toFixed(1)}% of market`,
+      })),
+    title: "Market cap by collateral type",
+    subtitle: "Each coin counted once, so these sum to the whole market.",
+    format: formatMarketCap,
+  });
+}
+
 // ---------- Modal ----------
+
+// Element that had focus before the modal opened, so it can be restored.
+let lastFocused = null;
 
 function openModal(sc, issuer) {
   const overlay = document.getElementById("modal-overlay");
   const body = document.getElementById("modal-body");
 
   const chains = (sc.blockchains || [])
-    .map((c) => `<span class="modal-chain-chip">${c}</span>`)
+    .map((c) => `<span class="modal-chain-chip">${escapeHtml(c)}</span>`)
     .join("");
 
   const launched = sc.launched ? formatDate(sc.launched) : "Unknown";
+  const series = coinSeries(sc.ticker, 0);
+  const change30 = coinChangeOver(sc.ticker, 30);
+
+  const pegBlock = Number.isFinite(sc.pegDeviationBps)
+    ? (() => {
+        const sev = pegSeverity(sc.pegDeviationBps);
+        return `
+          <div class="modal-info-item">
+            <div class="modal-info-label">Peg deviation</div>
+            <div class="modal-info-value">
+              <span class="peg-dot ${sev.level}"></span>${escapeHtml(
+          sc.pegDeviationBps.toFixed(1)
+        )} bps · ${escapeHtml(sev.label)}
+            </div>
+          </div>`;
+      })()
+    : "";
+
+  const priceBlock =
+    sc.price !== undefined
+      ? `<div class="modal-info-item">
+           <div class="modal-info-label">Price</div>
+           <div class="modal-info-value">${escapeHtml(
+             Number(sc.price).toFixed(4)
+           )} ${escapeHtml(sc.priceUnit || "")}</div>
+         </div>`
+      : "";
+
+  const changeBlock =
+    change30 !== null
+      ? `<div class="modal-info-item">
+           <div class="modal-info-label">30-day change</div>
+           <div class="modal-info-value ${change30 >= 0 ? "up" : "down"}">${escapeHtml(
+          formatPercent(change30, 1)
+        )}</div>
+         </div>`
+      : "";
 
   body.innerHTML = `
     <div class="modal-header">
-      <div class="modal-ticker">${sc.ticker}</div>
-      <div class="modal-name">${sc.name} · Issued by ${issuer.name}</div>
+      <div class="modal-ticker" id="modal-title">${escapeHtml(sc.ticker)}</div>
+      <div class="modal-name">${escapeHtml(sc.name)} · Issued by ${escapeHtml(
+    issuer.name
+  )}</div>
     </div>
     <div class="modal-body-inner">
+      ${
+        series.length >= 2
+          ? `<div class="modal-section">
+               <div class="modal-section-title">Market cap history</div>
+               <div class="modal-chart" id="modal-chart"></div>
+             </div>`
+          : ""
+      }
+
       <div class="modal-section">
         <div class="modal-section-title">Key Info</div>
         <div class="modal-info-grid">
           <div class="modal-info-item">
             <div class="modal-info-label">Market Cap</div>
-            <div class="modal-info-value">${formatMarketCap(sc.marketCap)}</div>
+            <div class="modal-info-value">${escapeHtml(formatMarketCap(sc.marketCap))}</div>
           </div>
+          ${changeBlock}
+          ${priceBlock}
+          ${pegBlock}
           <div class="modal-info-item">
             <div class="modal-info-label">Peg</div>
-            <div class="modal-info-value">${sc.peg}</div>
+            <div class="modal-info-value">${escapeHtml(sc.peg)}</div>
           </div>
           <div class="modal-info-item">
             <div class="modal-info-label">Type</div>
-            <div class="modal-info-value">${sc.type}</div>
+            <div class="modal-info-value">${escapeHtml(sc.type)}</div>
           </div>
           <div class="modal-info-item">
             <div class="modal-info-label">Status</div>
-            <div class="modal-info-value" style="text-transform: capitalize">${sc.status}</div>
+            <div class="modal-info-value" style="text-transform: capitalize">${escapeHtml(
+              sc.status
+            )}</div>
           </div>
           <div class="modal-info-item">
             <div class="modal-info-label">Launch Date</div>
-            <div class="modal-info-value">${launched}</div>
+            <div class="modal-info-value">${escapeHtml(launched)}</div>
           </div>
           <div class="modal-info-item">
             <div class="modal-info-label">Blockchain Count</div>
-            <div class="modal-info-value">${sc.blockchains.length}</div>
+            <div class="modal-info-value">${escapeHtml(
+              String((sc.blockchains || []).length)
+            )}</div>
           </div>
         </div>
       </div>
 
       <div class="modal-section">
         <div class="modal-section-title">Collateral / Reserves</div>
-        <div class="modal-reserves">${sc.reserves}</div>
+        <div class="modal-reserves">${escapeHtml(sc.reserves || "Not disclosed")}</div>
       </div>
 
-      ${sc.reserveManager ? `
-      <div class="modal-section">
-        <div class="modal-section-title">Reserve Manager</div>
-        <div class="modal-reserves">${sc.reserveManager}</div>
-      </div>` : ""}
+      ${
+        sc.reserveManager
+          ? `<div class="modal-section">
+               <div class="modal-section-title">Reserve Manager</div>
+               <div class="modal-reserves">${escapeHtml(sc.reserveManager)}</div>
+             </div>`
+          : ""
+      }
+
+      ${
+        sc.custodian
+          ? `<div class="modal-section">
+               <div class="modal-section-title">Custodian</div>
+               <div class="modal-reserves">${escapeHtml(sc.custodian)}</div>
+             </div>`
+          : ""
+      }
 
       <div class="modal-section">
-        <div class="modal-section-title">Supported Blockchains (${sc.blockchains.length})</div>
+        <div class="modal-section-title">Supported Blockchains (${escapeHtml(
+          String((sc.blockchains || []).length)
+        )})</div>
         <div class="modal-chains-grid">${chains}</div>
       </div>
 
-      ${sc.note ? `
-      <div class="modal-section">
-        <div class="modal-section-title">Note</div>
-        <div class="modal-reserves">${sc.note}</div>
-      </div>` : ""}
+      ${
+        sc.note
+          ? `<div class="modal-section">
+               <div class="modal-section-title">Note</div>
+               <div class="modal-reserves">${escapeHtml(sc.note)}</div>
+             </div>`
+          : ""
+      }
     </div>
   `;
 
+  if (series.length >= 2) {
+    renderTimeSeries(document.getElementById("modal-chart"), {
+      points: series,
+      title: `${sc.ticker} market cap`,
+      subtitle: `${series.length} daily snapshots.`,
+      format: formatMarketCap,
+    });
+  }
+
+  lastFocused = document.activeElement;
   overlay.classList.remove("hidden");
   document.body.style.overflow = "hidden";
+  document.getElementById("modal-close").focus();
 }
 
 function closeModal() {
-  document.getElementById("modal-overlay").classList.add("hidden");
+  const overlay = document.getElementById("modal-overlay");
+  if (overlay.classList.contains("hidden")) return;
+  overlay.classList.add("hidden");
   document.body.style.overflow = "";
+  if (lastFocused && document.contains(lastFocused)) lastFocused.focus();
+  lastFocused = null;
+}
+
+/** Keep Tab inside the dialog while it is open. */
+function trapModalFocus(event) {
+  const overlay = document.getElementById("modal-overlay");
+  if (event.key !== "Tab" || overlay.classList.contains("hidden")) return;
+
+  const focusable = overlay.querySelectorAll(
+    'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  );
+  if (!focusable.length) return;
+
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
 }
 
 // ---------- Event Listeners ----------
@@ -665,6 +1235,38 @@ function initEventListeners() {
     renderIssuers();
   });
 
+  // Sortable rankings columns — click to sort, click again to flip direction
+  document.querySelectorAll("#rankings-head .sortable").forEach((th) => {
+    th.tabIndex = 0;
+    const activate = () => {
+      const key = th.dataset.sort;
+      if (state.rankingsSort.key === key) {
+        state.rankingsSort.dir = state.rankingsSort.dir === "desc" ? "asc" : "desc";
+      } else {
+        state.rankingsSort = { key, dir: "desc" };
+      }
+      renderRankingsTable();
+    };
+    th.addEventListener("click", activate);
+    th.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        activate();
+      }
+    });
+  });
+
+  // Trend range picker
+  document.querySelectorAll(".range-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.trendRange = Number(btn.dataset.range);
+      document
+        .querySelectorAll(".range-btn")
+        .forEach((b) => b.classList.toggle("active", b === btn));
+      renderTrendsView();
+    });
+  });
+
   // Modal close
   document.getElementById("modal-close").addEventListener("click", closeModal);
 
@@ -672,9 +1274,35 @@ function initEventListeners() {
     if (e.target === e.currentTarget) closeModal();
   });
 
-  // Keyboard escape
+  // Keyboard: escape closes, tab stays trapped inside the dialog
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeModal();
+    trapModalFocus(e);
+  });
+
+  // Charts are drawn at their container's pixel width, so a resize needs a
+  // redraw. Debounced, and only for the chart views.
+  let resizeTimer = null;
+  let lastWidth = window.innerWidth;
+  window.addEventListener("resize", () => {
+    if (window.innerWidth === lastWidth) return; // ignore mobile scroll chrome
+    lastWidth = window.innerWidth;
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (state.activeView === "trends") renderTrendsView();
+      if (state.activeView === "structure") renderStructureView();
+    }, 180);
+  });
+
+  // Deep links — back/forward between views. An unrecognised hash falls back
+  // to the default view rather than leaving whatever was on screen, matching
+  // what a cold load of the same URL does.
+  window.addEventListener("hashchange", () => {
+    const hash = window.location.hash.replace(/^#/, "");
+    const view = VIEWS.includes(hash) ? hash : "issuers";
+    if (view !== state.activeView) {
+      switchView(view, { updateHash: false });
+    }
   });
 
   // Export / Import
@@ -1021,19 +1649,28 @@ function downloadDataJs() {
 
 // ---------- Init ----------
 
-function init() {
+async function init() {
   applyTheme(state.theme);
   renderStats();
   renderFilterTabs();
 
-  // Expand first two issuers by default for a better first impression
-  if (STABLECOIN_DATA.issuers.length > 0) {
-    state.expandedIssuers.add(STABLECOIN_DATA.issuers[0].id);
-    state.expandedIssuers.add(STABLECOIN_DATA.issuers[1].id);
-  }
+  // Expand the two largest issuers by default for a better first impression
+  STABLECOIN_DATA.issuers
+    .slice()
+    .sort((a, b) => computeIssuerMarketCap(b) - computeIssuerMarketCap(a))
+    .slice(0, 2)
+    .forEach((issuer) => state.expandedIssuers.add(issuer.id));
 
   renderIssuers();
   initEventListeners();
+
+  // History arrives asynchronously; re-render whatever depends on it once
+  // it lands so the first paint is never blocked on the fetch.
+  await loadHistory();
+  renderHeadlineDelta();
+
+  const initial = window.location.hash.replace(/^#/, "");
+  switchView(VIEWS.includes(initial) ? initial : "issuers", { updateHash: false });
 }
 
 document.addEventListener("DOMContentLoaded", init);
