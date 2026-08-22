@@ -868,19 +868,30 @@ function renderTrendsView() {
     format: formatMarketCap,
   });
 
-  // ---- Indexed comparison of the largest coins ----
-  const top = allCoins()
-    .filter((c) => c.marketCap > 0)
-    .sort((a, b) => b.marketCap - a.marketCap)
-    .slice(0, 6)
-    .map((c) => ({ name: c.ticker, points: coinSeries(c.ticker) }))
-    .filter((s) => s.points.length >= 2);
+  // ---- Indexed comparison ----
+  // Selected by how much each coin actually moved, not by size. Picking the
+  // largest coins fills the chart with near-flat lines — the majors move less
+  // than 3% over a range like this — and buries the coins that did something.
+  // A floor keeps out tiny coins whose percentages swing on noise.
+  const MIN_CAP_FOR_TREND = 100e6;
+
+  const movers = allCoins()
+    .filter((c) => c.marketCap >= MIN_CAP_FOR_TREND)
+    .map((c) => ({
+      name: c.ticker,
+      points: coinSeries(c.ticker),
+      change: coinChangeOver(c.ticker, windowDays),
+    }))
+    .filter((s) => s.points.length >= 2 && Number.isFinite(s.change))
+    .sort((a, b) => Math.abs(b.change) - Math.abs(a.change))
+    .slice(0, 6);
 
   renderIndexedLines(document.getElementById("chart-indexed"), {
-    series: top,
-    title: "Relative performance of the six largest stablecoins",
-    subtitle:
-      "Each coin indexed to 100 at the start of the range, so coins of very different size share one axis.",
+    series: movers,
+    title: "Biggest movers, indexed to a common base",
+    subtitle: `The six stablecoins over ${formatMarketCap(
+      MIN_CAP_FOR_TREND
+    )} that moved most this range. Each starts at 100, so a $180B coin and a $200M one are directly comparable — the axis is percent change, not dollars.`,
   });
 
   // ---- Growth leaders and laggards ----
