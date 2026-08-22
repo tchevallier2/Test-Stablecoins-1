@@ -3,7 +3,7 @@
    ============================================================ */
 
 // ---------- State ----------
-const VIEWS = ["issuers", "rankings", "by-type", "trends", "structure"];
+const VIEWS = ["issuers", "rankings", "by-type", "trends", "structure", "allocation"];
 
 const state = {
   activeFilter: "all",
@@ -23,6 +23,18 @@ const state = {
 // Daily snapshots from history.json; null until loaded, and stays null when
 // the file cannot be fetched (e.g. opened over file://).
 let HISTORY = null;
+
+// Venue attribution from allocations.json; null when unavailable.
+let ALLOCATIONS = null;
+
+// How each venue bucket is presented. Unattributed is deliberately last and
+// neutral: it is the absence of a label, not a venue competing with the rest.
+const VENUE_KINDS = {
+  cex: { name: "Centralised exchanges", colorVar: "--series-1" },
+  defi: { name: "DeFi protocols", colorVar: "--series-3" },
+  bridge: { name: "Bridge escrow", colorVar: "--series-4" },
+  unattributed: { name: "Unattributed", colorVar: "--series-unattributed" },
+};
 
 // ---------- Utilities ----------
 
@@ -84,6 +96,18 @@ async function loadHistory() {
     // explain the situation rather than rendering empty charts.
     console.warn("History unavailable:", err.message);
     HISTORY = null;
+  }
+}
+
+async function loadAllocations() {
+  try {
+    const res = await fetch("allocations.json", { cache: "no-cache" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const payload = await res.json();
+    if (payload?.tokens && Array.isArray(payload.venues)) ALLOCATIONS = payload;
+  } catch (err) {
+    console.warn("Allocations unavailable:", err.message);
+    ALLOCATIONS = null;
   }
 }
 
@@ -253,6 +277,7 @@ function switchView(view, { updateHash = true } = {}) {
   if (view === "by-type") renderByTypeView();
   if (view === "trends") renderTrendsView();
   if (view === "structure") renderStructureView();
+  if (view === "allocation") renderAllocationView();
 
   if (updateHash) {
     const target = `#${view}`;
@@ -1034,6 +1059,181 @@ function renderStructureView() {
   });
 }
 
+// ---------- Allocation View ----------
+
+/**
+ * Where supply actually sits, per coin.
+ *
+ * The residual leads rather than hides: most supply is in wallets nobody has
+ * labelled, and a chart that rescaled the attributed part to fill the bar
+ * would imply the market is far better understood than it is.
+ */
+function renderAllocationView() {
+  const summary = document.getElementById("allocation-summary");
+  const desc = document.getElementById("allocation-desc");
+
+  if (!ALLOCATIONS) {
+    desc.textContent = "";
+    summary.innerHTML = notice(
+      "Venue attribution has not been collected yet.",
+      `This view is built from <code>allocations.json</code>, produced by the
+       weekly allocations workflow. Run it once and this fills in.`
+    );
+    ["chart-allocation", "chart-venues", "allocation-table", "allocation-caveats"].forEach(
+      (id) => {
+        document.getElementById(id).innerHTML = "";
+      }
+    );
+    return;
+  }
+
+  const { meta, tokens, venues } = ALLOCATIONS;
+
+  const circulating = Object.values(tokens).reduce((s, t) => s + (t.circulating || 0), 0);
+  const attributed = Object.values(tokens).reduce((s, t) => s + (t.attributed || 0), 0);
+  const unattributed = circulating - attributed;
+
+  desc.textContent = `${Object.keys(tokens).sort().join(" and ")} only, from ${
+    meta.source
+  }, updated ${formatDate(meta.lastUpdated)}. ${meta.protocolsWithHoldings} of ${
+    meta.protocolsQueried
+  } venues queried hold a balance.`;
+
+  // ---- Summary tiles ----
+  const byKind = ALLOCATIONS.byKind || {};
+  summary.innerHTML = `
+    <div class="delta-tile">
+      <div class="delta-label">Attributed to a venue</div>
+      <div class="delta-value">${escapeHtml(formatMarketCap(attributed))}</div>
+      <div class="delta-abs">${escapeHtml(
+        ((attributed / circulating) * 100).toFixed(1)
+      )}% of ${escapeHtml(formatMarketCap(circulating))} tracked supply</div>
+    </div>
+    <div class="delta-tile">
+      <div class="delta-label">Unattributed</div>
+      <div class="delta-value muted">${escapeHtml(formatMarketCap(unattributed))}</div>
+      <div class="delta-abs">in wallets nobody has labelled</div>
+    </div>
+    <div class="delta-tile">
+      <div class="delta-label">On exchanges</div>
+      <div class="delta-value">${escapeHtml(formatMarketCap(byKind.cex || 0))}</div>
+      <div class="delta-abs">${escapeHtml(
+        venues.filter((v) => v.kind === "cex").length.toString()
+      )} exchanges with identified wallets</div>
+    </div>
+    <div class="delta-tile">
+      <div class="delta-label">In DeFi protocols</div>
+      <div class="delta-value">${escapeHtml(formatMarketCap(byKind.defi || 0))}</div>
+      <div class="delta-abs">${escapeHtml(
+        venues.filter((v) => v.kind === "defi").length.toString()
+      )} protocols, excluding bridge escrow</div>
+    </div>
+  `;
+
+  // ---- Composition per coin ----
+  const rows = Object.entries(tokens).map(([ticker, t]) => {
+    const held = (kind) =>
+      venues
+        .filter((v) => v.kind === kind)
+        .reduce((sum, v) => sum + (v.holdings?.[ticker] || 0), 0);
+
+    return {
+      label: ticker,
+      segments: [
+        { name: VENUE_KINDS.cex.name, value: held("cex"), colorVar: VENUE_KINDS.cex.colorVar },
+        { name: VENUE_KINDS.defi.name, value: held("defi"), colorVar: VENUE_KINDS.defi.colorVar },
+        {
+          name: VENUE_KINDS.bridge.name,
+          value: held("bridge"),
+          colorVar: VENUE_KINDS.bridge.colorVar,
+        },
+        {
+          name: VENUE_KINDS.unattributed.name,
+          value: Math.max(0, t.unattributed || 0),
+          colorVar: VENUE_KINDS.unattributed.colorVar,
+        },
+      ],
+    };
+  });
+
+  renderStackedBars(document.getElementById("chart-allocation"), {
+    rows,
+    title: "Where each stablecoin sits",
+    subtitle:
+      "Share of total circulating supply. The grey band is supply held at addresses nobody has labelled — it is the largest single bucket, and shrinking it would misrepresent how much of the market is actually accounted for.",
+    format: formatMarketCap,
+    legend: Object.values(VENUE_KINDS),
+  });
+
+  // ---- Ranked venues ----
+  const top = venues.slice(0, 15);
+  renderBars(document.getElementById("chart-venues"), {
+    items: top.map((v) => ({
+      label: v.name,
+      value: v.total,
+      detail: `${VENUE_KINDS[v.kind]?.name || v.kind} · ${v.category || ""} · ${Object.entries(
+        v.holdings || {}
+      )
+        .map(([k, n]) => `${k} ${formatMarketCap(n)}`)
+        .join(", ")}`,
+    })),
+    title: "Largest venues by stablecoin balance",
+    subtitle: `Top ${top.length} of ${venues.length} venues holding USDT or USDC.`,
+    format: formatMarketCap,
+  });
+
+  // ---- Full table ----
+  document.getElementById("allocation-table").innerHTML = `
+    <div class="rankings-wrap allocation-wrap">
+      <table class="rankings-table">
+        <thead>
+          <tr>
+            <th class="col-rank">#</th>
+            <th>Venue</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th class="col-mcap">USDT</th>
+            <th class="col-mcap">USDC</th>
+            <th class="col-mcap">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${venues
+            .map(
+              (v, i) => `
+            <tr>
+              <td class="col-rank">${i + 1}</td>
+              <td><span class="rt-ticker">${escapeHtml(v.name)}</span></td>
+              <td><span class="kind-chip kind-${escapeHtml(v.kind)}">${escapeHtml(
+                VENUE_KINDS[v.kind]?.name || v.kind
+              )}</span></td>
+              <td class="rt-issuer">${escapeHtml(v.category || "—")}</td>
+              <td class="col-mcap rt-mcap">${escapeHtml(
+                v.holdings?.USDT ? formatMarketCap(v.holdings.USDT) : "—"
+              )}</td>
+              <td class="col-mcap rt-mcap">${escapeHtml(
+                v.holdings?.USDC ? formatMarketCap(v.holdings.USDC) : "—"
+              )}</td>
+              <td class="col-mcap rt-mcap">${escapeHtml(formatMarketCap(v.total))}</td>
+            </tr>`
+            )
+            .join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  // ---- Caveats, stated in the UI rather than buried in the data file ----
+  document.getElementById("allocation-caveats").innerHTML = `
+    <div class="caveat-panel">
+      <h3 class="caveat-title">How to read these numbers</h3>
+      <ul class="caveat-list">
+        ${(meta.caveats || []).map((c) => `<li>${escapeHtml(c)}</li>`).join("")}
+      </ul>
+    </div>
+  `;
+}
+
 // ---------- Modal ----------
 
 // Element that had focus before the modal opened, so it can be restored.
@@ -1306,6 +1506,7 @@ function initEventListeners() {
     resizeTimer = setTimeout(() => {
       if (state.activeView === "trends") renderTrendsView();
       if (state.activeView === "structure") renderStructureView();
+      if (state.activeView === "allocation") renderAllocationView();
     }, 180);
   });
 
@@ -1681,7 +1882,7 @@ async function init() {
 
   // History arrives asynchronously; re-render whatever depends on it once
   // it lands so the first paint is never blocked on the fetch.
-  await loadHistory();
+  await Promise.all([loadHistory(), loadAllocations()]);
   renderHeadlineDelta();
 
   const initial = window.location.hash.replace(/^#/, "");

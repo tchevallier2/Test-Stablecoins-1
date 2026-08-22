@@ -1996,3 +1996,60 @@ body {
 .chart-value-inside {
   fill: #ffffff;
 }
+
+/* ---------- Allocation view ---------- */
+
+.kind-chip {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--bg-surface-2);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.kind-chip.kind-cex { border-color: var(--series-1); color: var(--series-1); }
+.kind-chip.kind-defi { border-color: var(--series-3); color: var(--series-3); }
+.kind-chip.kind-bridge { border-color: var(--series-4); color: var(--series-4); }
+
+.allocation-wrap {
+  margin-bottom: 20px;
+}
+
+.allocation-wrap .rankings-table {
+  min-width: 780px;
+}
+
+.caveat-panel {
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px 22px;
+  margin-bottom: 20px;
+}
+
+.caveat-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.caveat-list {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.caveat-list li {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}

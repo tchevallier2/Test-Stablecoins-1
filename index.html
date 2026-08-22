@@ -66,6 +66,7 @@
           <button class="page-tab" data-view="by-type" role="tab" aria-selected="false">Stablecoins by Type</button>
           <button class="page-tab" data-view="trends" role="tab" aria-selected="false">Trends</button>
           <button class="page-tab" data-view="structure" role="tab" aria-selected="false">Market Structure</button>
+          <button class="page-tab" data-view="allocation" role="tab" aria-selected="false">Where It Sits</button>
         </div>
         <div class="data-toolbar">
           <button class="toolbar-btn" id="export-btn" title="Download data as CSV (opens in Google Sheets)">
@@ -193,6 +194,26 @@
         <div class="chart-card" id="chart-chains"></div>
 
         <div class="chart-card" id="chart-types"></div>
+      </div>
+
+      <!-- ===== ALLOCATION VIEW ===== -->
+      <div id="allocation-view" class="hidden" role="tabpanel">
+        <div class="view-intro">
+          <div>
+            <h2 class="view-title">Where it sits</h2>
+            <p class="view-desc" id="allocation-desc"></p>
+          </div>
+        </div>
+
+        <div class="delta-grid" id="allocation-summary"></div>
+
+        <div class="chart-card" id="chart-allocation"></div>
+
+        <div class="chart-card" id="chart-venues"></div>
+
+        <div id="allocation-table"></div>
+
+        <div id="allocation-caveats"></div>
       </div>
 
     </main>
