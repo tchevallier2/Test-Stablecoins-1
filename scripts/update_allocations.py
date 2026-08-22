@@ -61,7 +61,10 @@ TARGET_TOKENS = {
     },
     "USDC": {
         "label": "USD Coin",
-        "aliases": {"USDC", "USDC.E", "USDCE", "AXLUSDC", "USDBC", "USDC_"},
+        "aliases": {
+            "USDC", "USDC.E", "USDCE", "AXLUSDC", "USDBC", "USDC_",
+            "AVALANCHEUSDC",
+        },
     },
 }
 
@@ -83,6 +86,11 @@ DEFI_CATEGORIES = {
 }
 
 CEX_CATEGORIES = {"CEX"}
+
+# Bridge escrow is not DeFi usage: the locked dollar backs a representation
+# that is itself counted on the destination chain. Bucketed separately so the
+# composition chart does not imply it is deployed capital.
+BRIDGE_CATEGORIES = {"Bridge"}
 
 MAX_DEFI_PROTOCOLS = int(os.environ.get("MAX_DEFI_PROTOCOLS", "45"))
 REQUEST_PAUSE_SECONDS = 0.35  # free tier is ~500 requests per 5 minutes
@@ -226,7 +234,15 @@ def main() -> int:
     if not cexes:
         print("  ⚠ No protocols carried category 'CEX' — check the category name.")
 
-    selected = [(p, "cex") for p in cexes] + [(p, "defi") for p in defi]
+    def kind_of(protocol: dict) -> str:
+        category = protocol.get("category") or ""
+        if category in CEX_CATEGORIES:
+            return "cex"
+        if category in BRIDGE_CATEGORIES:
+            return "bridge"
+        return "defi"
+
+    selected = [(p, "cex") for p in cexes] + [(p, kind_of(p)) for p in defi]
 
     venues: list[dict] = []
     unmatched_stable_symbols: dict[str, float] = {}
@@ -301,7 +317,7 @@ def main() -> int:
 
     by_kind = {
         kind: round(sum(v["total"] for v in venues if v["kind"] == kind))
-        for kind in ("cex", "defi")
+        for kind in ("cex", "defi", "bridge")
     }
 
     payload = {
@@ -336,7 +352,11 @@ def main() -> int:
         f.write("\n")
 
     print(f"\nWrote {OUTPUT_PATH}")
-    print(f"  venues with holdings: {len(venues)} (CEX ${by_kind['cex']:,.0f}, DeFi ${by_kind['defi']:,.0f})")
+    print(
+        f"  venues with holdings: {len(venues)} — "
+        f"CEX ${by_kind['cex']:,.0f}, DeFi ${by_kind['defi']:,.0f}, "
+        f"bridges ${by_kind['bridge']:,.0f}"
+    )
     for token, summary in tokens_summary.items():
         if summary["circulating"]:
             print(

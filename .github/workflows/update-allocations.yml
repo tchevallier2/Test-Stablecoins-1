@@ -70,8 +70,10 @@ jobs:
           path: allocations.json
           if-no-files-found: warn
 
+      # `inputs` is null outside workflow_dispatch, and GitHub coerces
+      # `null != false` to false — which silently skipped this on push runs.
       - name: Commit if changed
-        if: ${{ inputs.commit != false }}
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.commit }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
