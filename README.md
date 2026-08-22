@@ -15,6 +15,7 @@ Live at **https://tchevallier2.github.io/Test-Stablecoins-1/**
 | **Stablecoins by Type** | Coins grouped by collateral model |
 | **Trends** | Market cap over time, relative performance, growth leaders and laggards |
 | **Market Structure** | Concentration, peg stability, chain deployment, collateral mix |
+| **Where It Sits** | Which exchanges and protocols actually hold the supply |
 
 Views are deep-linkable — `#trends`, `#structure`, and so on.
 
@@ -54,6 +55,40 @@ reconstructed from the repository's own git history — the daily job overwrites
 ```bash
 python3 scripts/backfill_history.py   # idempotent; only fills missing days
 ```
+
+## Where the supply sits
+
+`data.js` answers *how much exists*. `allocations.json` answers *where it sits*,
+which needs a different kind of source: balances of **labelled** addresses.
+`.github/workflows/update-allocations.yml` runs weekly and drives
+`scripts/update_allocations.py` against DefiLlama's free API.
+
+Three limits are structural and are surfaced in the view itself, not buried:
+
+- **Coverage is partial.** Only labelled addresses can be attributed. Around
+  60% of USDT and 52% of USDC sits at addresses nobody has tagged. That
+  residual is charted as its own band rather than rescaled away — a chart that
+  hid it would imply the market is far better understood than it is.
+- **Venues overlap.** A dollar lent on one protocol can be borrowed and
+  redeposited on another, so venue totals are "value present at a venue", not
+  a partition of supply.
+- **Exchanges without proof-of-reserves are undercounted**, which makes the
+  ones that publish look larger by comparison. Coinbase, for instance, does not
+  appear in the source's exchange set at all.
+
+Bridge escrow is bucketed separately from DeFi: a dollar locked in a bridge
+backs a representation that is counted again on the destination chain, so
+folding it into DeFi would overstate deployed capital.
+
+### Token matching
+
+Aliases are matched **exactly, never by prefix**. Bridged variants
+(`USDC.e`, `axlUSDC`, `AvalancheUSDC`) are the same economic dollar and fold in.
+Look-alikes must not: `USDtb` and `USDT0` are separate coins, and receipt or
+wrapper tokens (`aEthUSDT`, `syrupUSDC`, `sUSDe`, `PT-sUSDe-*`) represent a
+*claim* on a deposit that is already counted, so including them would double
+count billions. Any large unrecognised USD-ish ticker is reported under
+`diagnostics.unmatchedStablecoinSymbols` so the alias lists grow from evidence.
 
 ## Local development
 
@@ -99,4 +134,5 @@ data.js* writes a file you can commit.
 | `styles.css` | Styling, theming, chart palette |
 | `data.js` | Generated — current issuers and coins |
 | `history.json` | Generated — daily market cap snapshots |
+| `allocations.json` | Generated — venue attribution for USDT and USDC |
 | `scripts/` | Data pipeline and checks |
