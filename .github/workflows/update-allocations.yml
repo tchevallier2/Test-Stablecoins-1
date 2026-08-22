@@ -3,6 +3,11 @@ name: Update Stablecoin Allocations
 # Attributes stablecoin supply to the venues holding it (exchanges, lending
 # markets, DEX pools) using DefiLlama. Runs weekly rather than daily: venue
 # balances move slowly and the job makes ~60 API calls.
+#
+# workflow_dispatch only becomes available once this file is on the default
+# branch, so while the feature lives on its branch the push trigger below is
+# what actually exercises it. It is path-filtered so unrelated pushes do not
+# spend ~60 API calls.
 on:
   schedule:
     - cron: "30 6 * * 1"
@@ -12,6 +17,10 @@ on:
         description: "Commit allocations.json back to the branch"
         type: boolean
         default: true
+  push:
+    paths:
+      - "scripts/update_allocations.py"
+      - ".github/workflows/update-allocations.yml"
 
 jobs:
   update-allocations:
