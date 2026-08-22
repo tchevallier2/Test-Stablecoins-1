@@ -1,0 +1,74 @@
+name: Update Stablecoin Allocations
+
+# Attributes stablecoin supply to the venues holding it (exchanges, lending
+# markets, DEX pools) using DefiLlama. Runs weekly rather than daily: venue
+# balances move slowly and the job makes ~60 API calls.
+on:
+  schedule:
+    - cron: "30 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: "Commit allocations.json back to the branch"
+        type: boolean
+        default: true
+
+jobs:
+  update-allocations:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Fetch venue allocations from DefiLlama
+        run: python scripts/update_allocations.py
+
+      - name: Summarise result
+        if: always()
+        run: |
+          if [ -f allocations.json ]; then
+            python - <<'PY'
+          import json
+          d = json.load(open("allocations.json"))
+          print("== meta ==");   print(json.dumps(d["meta"], indent=2))
+          print("== tokens =="); print(json.dumps(d["tokens"], indent=2))
+          print("== byKind =="); print(json.dumps(d["byKind"], indent=2))
+          print("== top 25 venues ==")
+          for v in d["venues"][:25]:
+              print(f"  {v['kind']:4s} {v['category'] or '-':18s} {v['name'][:30]:30s} ${v['total']:,}")
+          print("== diagnostics =="); print(json.dumps(d["diagnostics"], indent=2))
+          PY
+          else
+            echo "allocations.json was not produced"
+          fi
+
+      # Uploaded so the file can be inspected without committing a bad run.
+      - name: Upload allocations.json
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allocations
+          path: allocations.json
+          if-no-files-found: warn
+
+      - name: Commit if changed
+        if: ${{ inputs.commit != false }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add allocations.json
+          git diff --cached --quiet || (
+            git commit -m "chore: update stablecoin allocations $(date -u +'%Y-%m-%d')" &&
+            git pull --rebase &&
+            git push
+          )
