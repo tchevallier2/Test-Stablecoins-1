@@ -794,6 +794,152 @@ function renderBars(container, { items, title, subtitle, format = compactUsd }) 
   });
 }
 
+// ---------- Stacked composition bars ----------
+
+/**
+ * rows: [{ label, segments: [{ name, value, colorVar }] }]
+ *
+ * One bar per row, each split into segments summing to that row's total.
+ * Segments are separated by a 2px gap in the surface colour rather than a
+ * stroke, so neighbouring fills read as distinct without adding ink.
+ */
+function renderStackedBars(container, { rows, title, subtitle, format = compactUsd, legend = [] }) {
+  const { figure, plot } = makeFigure(container, {
+    title,
+    subtitle,
+    ariaLabel: `${title}. Stacked composition of ${rows.length} rows.`,
+  });
+
+  if (!rows.length) {
+    plot.innerHTML = `<p class="chart-empty">No data available.</p>`;
+    return;
+  }
+
+  const W = plotWidth(plot);
+  const rowH = 62;
+  const H = rows.length * rowH + 8;
+  const M = scaleMargins(W, { top: 4, right: 8, bottom: 4, left: 74 });
+  const innerW = W - M.left - M.right;
+  const GAP = 2;
+
+  const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, height: H, class: "chart-svg chart-svg-fixed" });
+  const tip = makeTooltip(plot);
+
+  rows.forEach((row, rowIndex) => {
+    const total = row.segments.reduce((sum, s) => sum + Math.max(0, s.value), 0) || 1;
+    const yTop = M.top + rowIndex * rowH + 20;
+    const barH = 26;
+
+    const name = svgEl("text", {
+      x: M.left - 12,
+      y: yTop + barH / 2 + 4,
+      class: "chart-row-label",
+      "text-anchor": "end",
+    });
+    name.textContent = row.label;
+    svg.appendChild(name);
+
+    const totalLabel = svgEl("text", {
+      x: M.left,
+      y: yTop - 7,
+      class: "chart-axis-label",
+      "text-anchor": "start",
+    });
+    totalLabel.textContent = `${format(total)} total`;
+    svg.appendChild(totalLabel);
+
+    let cursor = M.left;
+    row.segments.forEach((segment, i) => {
+      const share = Math.max(0, segment.value) / total;
+      const rawWidth = share * innerW;
+      const isLast = i === row.segments.length - 1;
+      const width = Math.max(0, isLast ? rawWidth : rawWidth - GAP);
+      if (rawWidth <= 0) return;
+
+      svg.appendChild(
+        svgEl("rect", {
+          x: cursor,
+          y: yTop,
+          width,
+          height: barH,
+          rx: 2,
+          class: "chart-bar",
+          style: `fill: var(${segment.colorVar})`,
+        })
+      );
+
+      // Label inside only when it genuinely fits, measured against the text.
+      const pct = `${(share * 100).toFixed(share < 10 ? 1 : 0)}%`;
+      if (width > pct.length * 8 + 16) {
+        const label = svgEl("text", {
+          x: cursor + width / 2,
+          y: yTop + barH / 2 + 4,
+          class: "chart-value-label chart-value-inside",
+          "text-anchor": "middle",
+        });
+        label.textContent = pct;
+        svg.appendChild(label);
+      }
+
+      const hit = svgEl("rect", {
+        x: cursor,
+        y: yTop,
+        width,
+        height: barH,
+        fill: "transparent",
+        class: "chart-hit",
+      });
+      hit.addEventListener("mousemove", (event) => {
+        const box = plot.getBoundingClientRect();
+        tip.innerHTML = `<div class="tt-date">${escapeHtml(row.label)}</div>
+          <div class="tt-row"><span class="legend-swatch" style="background: var(${
+            segment.colorVar
+          })"></span><span class="tt-row-name">${escapeHtml(segment.name)}</span></div>
+          <div class="tt-value">${escapeHtml(format(segment.value))}</div>
+          <div class="tt-meta">${escapeHtml((share * 100).toFixed(1))}% of ${escapeHtml(
+          row.label
+        )}</div>`;
+        tip.classList.remove("hidden");
+        positionTooltip(tip, plot, event.clientX - box.left, event.clientY - box.top);
+      });
+      hit.addEventListener("mouseleave", () => tip.classList.add("hidden"));
+      svg.appendChild(hit);
+
+      cursor += rawWidth;
+    });
+  });
+
+  plot.appendChild(svg);
+
+  if (legend.length) {
+    const legendEl = document.createElement("div");
+    legendEl.className = "chart-legend";
+    legendEl.innerHTML = legend
+      .map(
+        (l) =>
+          `<span class="legend-item"><span class="legend-swatch" style="background: var(${l.colorVar})"></span>${escapeHtml(
+            l.name
+          )}</span>`
+      )
+      .join("");
+    figure.appendChild(legendEl);
+  }
+
+  attachA11yTable(figure, {
+    caption: `${title} — underlying data`,
+    columns: ["Group", "Segment", "Value", "Share"],
+    rows: rows.flatMap((row) => {
+      const total = row.segments.reduce((s, x) => s + Math.max(0, x.value), 0) || 1;
+      return row.segments.map((s) => [
+        row.label,
+        s.name,
+        format(s.value),
+        `${((Math.max(0, s.value) / total) * 100).toFixed(1)}%`,
+      ]);
+    }),
+  });
+}
+
 // ---------- Sparkline (inline, for table rows) ----------
 
 /** Returns an SVG string — small enough to inline into table markup. */

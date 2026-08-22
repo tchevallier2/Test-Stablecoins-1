@@ -1329,6 +1329,11 @@ body {
   --diverge-pos: #2a78d6;
   --diverge-neg: #d03b3b;
 
+  /* Supply nobody has labelled. Deliberately a recessive neutral rather than a
+     categorical hue: it is the absence of information, not another venue, and
+     must not compete with the real ones for attention. */
+  --series-unattributed: #b9bcc4;
+
   --chart-grid: #e1e0d9;
   --chart-axis: #c3c2b7;
   --chart-ink-muted: #898781;
@@ -1352,6 +1357,8 @@ body {
 
   --diverge-pos: #3987e5;
   --diverge-neg: #e66767;
+
+  --series-unattributed: #4a5163;
 
   --chart-grid: #2c2c2a;
   --chart-axis: #383835;
