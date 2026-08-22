@@ -1,0 +1,837 @@
+{
+  "meta": {
+    "lastUpdated": "2026-08-22",
+    "source": "DefiLlama (api.llama.fi, stablecoins.llama.fi)",
+    "scope": [
+      "USDC",
+      "USDT"
+    ],
+    "protocolsQueried": 125,
+    "protocolsWithHoldings": 69,
+    "requestFailures": 0,
+    "caveats": [
+      "Only labelled addresses are attributable; the unattributed residual is real supply nobody has tagged, not an error.",
+      "Venue totals can double count \u2014 a dollar lent on one protocol can be borrowed and redeposited on another.",
+      "Exchange balances come from publicly identified wallets, so exchanges without proof-of-reserves are undercounted."
+    ]
+  },
+  "tokens": {
+    "USDT": {
+      "label": "Tether USD",
+      "circulating": 183188489612,
+      "attributed": 73901735454,
+      "unattributed": 109286754158,
+      "attributedPct": 40.34
+    },
+    "USDC": {
+      "label": "USD Coin",
+      "circulating": 73603452961,
+      "attributed": 35627465274,
+      "unattributed": 37975987687,
+      "attributedPct": 48.4
+    }
+  },
+  "byKind": {
+    "cex": 70552226650,
+    "defi": 23237239470,
+    "bridge": 15739734614
+  },
+  "venues": [
+    {
+      "name": "Binance CEX",
+      "slug": "binance-cex",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDC": 8461322084,
+        "USDT": 40336295942
+      },
+      "total": 48797618026
+    },
+    {
+      "name": "OKX",
+      "slug": "okx",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDC": 1354849128,
+        "USDT": 8311610726
+      },
+      "total": 9666459855
+    },
+    {
+      "name": "Hyperliquid Bridge",
+      "slug": "hyperliquid-bridge",
+      "kind": "bridge",
+      "category": "Bridge",
+      "holdings": {
+        "USDC": 6521680371
+      },
+      "total": 6521680371
+    },
+    {
+      "name": "Aave V3",
+      "slug": "aave-v3",
+      "kind": "defi",
+      "category": "Lending",
+      "holdings": {
+        "USDC": 2862933235,
+        "USDT": 3039518871
+      },
+      "total": 5902452106
+    },
+    {
+      "name": "Bybit",
+      "slug": "bybit",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 3843094876,
+        "USDC": 1052499326
+      },
+      "total": 4895594202
+    },
+    {
+      "name": "Maple",
+      "slug": "maple",
+      "kind": "defi",
+      "category": "Lending",
+      "holdings": {
+        "USDC": 3668653930,
+        "USDT": 917016366
+      },
+      "total": 4585670296
+    },
+    {
+      "name": "Sky Lending",
+      "slug": "sky-lending",
+      "kind": "defi",
+      "category": "CDP",
+      "holdings": {
+        "USDC": 4003099432,
+        "USDT": 590
+      },
+      "total": 4003100021
+    },
+    {
+      "name": "Morpho Blue",
+      "slug": "morpho-blue",
+      "kind": "defi",
+      "category": "Lending",
+      "holdings": {
+        "USDC": 3168942528,
+        "USDT": 377935702
+      },
+      "total": 3546878230
+    },
+    {
+      "name": "LayerZero V2",
+      "slug": "layerzero-v2",
+      "kind": "bridge",
+      "category": "Bridge",
+      "holdings": {
+        "USDC": 3047502,
+        "USDT": 3324832081
+      },
+      "total": 3327879584
+    },
+    {
+      "name": "USDT0",
+      "slug": "usdt0",
+      "kind": "bridge",
+      "category": "Bridge",
+      "holdings": {
+        "USDT": 3317095695
+      },
+      "total": 3317095695
+    },
+    {
+      "name": "JustCryptos",
+      "slug": "justcryptos",
+      "kind": "bridge",
+      "category": "Bridge",
+      "holdings": {
+        "USDT": 2546768447
+      },
+      "total": 2546768447
+    },
+    {
+      "name": "MEXC",
+      "slug": "mexc",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 1909393360,
+        "USDC": 190987896
+      },
+      "total": 2100381256
+    },
+    {
+      "name": "Centrifuge Protocol",
+      "slug": "centrifuge-protocol",
+      "kind": "defi",
+      "category": "RWA",
+      "holdings": {
+        "USDC": 1635425272
+      },
+      "total": 1635425272
+    },
+    {
+      "name": "Bitget",
+      "slug": "bitget",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDC": 84272316,
+        "USDT": 1135040698
+      },
+      "total": 1219313015
+    },
+    {
+      "name": "KuCoin",
+      "slug": "kucoin",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDC": 70477211,
+        "USDT": 1031783403
+      },
+      "total": 1102260614
+    },
+    {
+      "name": "PancakeSwap AMM",
+      "slug": "pancakeswap-amm",
+      "kind": "defi",
+      "category": "Dexs",
+      "holdings": {
+        "USDT": 841030943,
+        "USDC": 11999834
+      },
+      "total": 853030777
+    },
+    {
+      "name": "Deribit",
+      "slug": "deribit",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 66714028,
+        "USDC": 566429350
+      },
+      "total": 633143378
+    },
+    {
+      "name": "Compound V3",
+      "slug": "compound-v3",
+      "kind": "defi",
+      "category": "Lending",
+      "holdings": {
+        "USDC": 394550200,
+        "USDT": 182349490
+      },
+      "total": 576899689
+    },
+    {
+      "name": "Jupiter Lend",
+      "slug": "jupiter-lend",
+      "kind": "defi",
+      "category": "Lending",
+      "holdings": {
+        "USDC": 436082301,
+        "USDT": 18478348
+      },
+      "total": 454560649
+    },
+    {
+      "name": "SparkLend",
+      "slug": "sparklend",
+      "kind": "defi",
+      "category": "Lending",
+      "holdings": {
+        "USDC": 21912390,
+        "USDT": 387602249
+      },
+      "total": 409514640
+    },
+    {
+      "name": "BingX",
+      "slug": "bingx",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDC": 19647401,
+        "USDT": 354345162
+      },
+      "total": 373992563
+    },
+    {
+      "name": "Kamino Lend",
+      "slug": "kamino-lend",
+      "kind": "defi",
+      "category": "Lending",
+      "holdings": {
+        "USDC": 277099530,
+        "USDT": 10744718
+      },
+      "total": 287844248
+    },
+    {
+      "name": "Crypto-com",
+      "slug": "crypto-com",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDC": 106677646,
+        "USDT": 178146584
+      },
+      "total": 284824230
+    },
+    {
+      "name": "Bitfinex",
+      "slug": "bitfinex",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 245304868,
+        "USDC": 23143253
+      },
+      "total": 268448121
+    },
+    {
+      "name": "Curve DEX",
+      "slug": "curve-dex",
+      "kind": "defi",
+      "category": "Dexs",
+      "holdings": {
+        "USDC": 164201534,
+        "USDT": 95822687
+      },
+      "total": 260024222
+    },
+    {
+      "name": "Venus Core Pool",
+      "slug": "venus-core-pool",
+      "kind": "defi",
+      "category": "Lending",
+      "holdings": {
+        "USDT": 208574418,
+        "USDC": 46143999
+      },
+      "total": 254718418
+    },
+    {
+      "name": "JustLend V1",
+      "slug": "justlend-v1",
+      "kind": "defi",
+      "category": "Lending",
+      "holdings": {
+        "USDT": 208423992,
+        "USDC": 189658
+      },
+      "total": 208613651
+    },
+    {
+      "name": "Ethena USDe",
+      "slug": "ethena-usde",
+      "kind": "defi",
+      "category": "Basis Trading",
+      "holdings": {
+        "USDC": 188229102
+      },
+      "total": 188229102
+    },
+    {
+      "name": "Bitunix",
+      "slug": "bitunix",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDC": 42491726,
+        "USDT": 113417059
+      },
+      "total": 155908785
+    },
+    {
+      "name": "Gate",
+      "slug": "gate",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDC": 7289211,
+        "USDT": 144739626
+      },
+      "total": 152028837
+    },
+    {
+      "name": "Phemex",
+      "slug": "phemex",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDC": 16640376,
+        "USDT": 105397154
+      },
+      "total": 122037530
+    },
+    {
+      "name": "Bitmex",
+      "slug": "bitmex",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 100758021,
+        "USDC": 706691
+      },
+      "total": 101464712
+    },
+    {
+      "name": "USDD",
+      "slug": "usdd",
+      "kind": "defi",
+      "category": "CDP",
+      "holdings": {
+        "USDT": 70278149,
+        "USDC": 0
+      },
+      "total": 70278149
+    },
+    {
+      "name": "HashKey Exchange",
+      "slug": "hashkey-exchange",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 66324940,
+        "USDC": 1315958
+      },
+      "total": 67640898
+    },
+    {
+      "name": "BloFin",
+      "slug": "blofin",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDC": 6867675,
+        "USDT": 55503919
+      },
+      "total": 62371594
+    },
+    {
+      "name": "SwissBorg",
+      "slug": "swissborg",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDC": 46651875,
+        "USDT": 5510654
+      },
+      "total": 52162529
+    },
+    {
+      "name": "Indodax",
+      "slug": "indodax",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDC": 1857575,
+        "USDT": 43993756
+      },
+      "total": 45851331
+    },
+    {
+      "name": "WEEX",
+      "slug": "weex",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 43565122,
+        "USDC": 1867427
+      },
+      "total": 45432549
+    },
+    {
+      "name": "VALR",
+      "slug": "valr",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 30535139,
+        "USDC": 10251228
+      },
+      "total": 40786368
+    },
+    {
+      "name": "Bitkub",
+      "slug": "bitkub",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 35154441,
+        "USDC": 900194
+      },
+      "total": 36054635
+    },
+    {
+      "name": "Backpack",
+      "slug": "backpack",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 3750863,
+        "USDC": 27859712
+      },
+      "total": 31610575
+    },
+    {
+      "name": "Gate US",
+      "slug": "gate-us",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 23117090,
+        "USDC": 6192278
+      },
+      "total": 29309368
+    },
+    {
+      "name": "Toobit",
+      "slug": "toobit",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 8001782,
+        "USDC": 19998521
+      },
+      "total": 28000303
+    },
+    {
+      "name": "CCIP",
+      "slug": "ccip",
+      "kind": "bridge",
+      "category": "Bridge",
+      "holdings": {
+        "USDC": 25114583,
+        "USDT": 1195934
+      },
+      "total": 26310517
+    },
+    {
+      "name": "Ourbit",
+      "slug": "ourbit",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 23574020,
+        "USDC": 2563938
+      },
+      "total": 26137958
+    },
+    {
+      "name": "Niza",
+      "slug": "niza",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDC": 24997568
+      },
+      "total": 24997568
+    },
+    {
+      "name": "Poloniex",
+      "slug": "poloniex",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 10529532,
+        "USDC": 7892284
+      },
+      "total": 18421816
+    },
+    {
+      "name": "Flipster",
+      "slug": "flipster",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 17219489,
+        "USDC": 643294
+      },
+      "total": 17862783
+    },
+    {
+      "name": "Hibt",
+      "slug": "hibt",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 16919084,
+        "USDC": 470646
+      },
+      "total": 17389730
+    },
+    {
+      "name": "OSL HK",
+      "slug": "osl-hk",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 14225676,
+        "USDC": 2225029
+      },
+      "total": 16450704
+    },
+    {
+      "name": "BitKan",
+      "slug": "bitkan",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 15841856,
+        "USDC": 28235
+      },
+      "total": 15870091
+    },
+    {
+      "name": "Zoomex",
+      "slug": "zoomex",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDC": 844855,
+        "USDT": 12112917
+      },
+      "total": 12957772
+    },
+    {
+      "name": "BYDFi",
+      "slug": "bydfi",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 1992992,
+        "USDC": 9849679
+      },
+      "total": 11842671
+    },
+    {
+      "name": "OSL",
+      "slug": "osl",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 5578147,
+        "USDC": 4357354
+      },
+      "total": 9935501
+    },
+    {
+      "name": "Byte Exchange",
+      "slug": "byte-exchange",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDC": 8299886
+      },
+      "total": 8299886
+    },
+    {
+      "name": "LeveX",
+      "slug": "levex",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDC": 1956062,
+        "USDT": 5764634
+      },
+      "total": 7720696
+    },
+    {
+      "name": "HashKey Global",
+      "slug": "hashkey-global",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 7674322,
+        "USDC": 37079
+      },
+      "total": 7711401
+    },
+    {
+      "name": "Pionex",
+      "slug": "pionex",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 5170101,
+        "USDC": 2314578
+      },
+      "total": 7484679
+    },
+    {
+      "name": "BitVenus",
+      "slug": "bitvenus",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 4208965,
+        "USDC": 1503206
+      },
+      "total": 5712171
+    },
+    {
+      "name": "OrangeX",
+      "slug": "orangex",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 4849039,
+        "USDC": 597208
+      },
+      "total": 5446247
+    },
+    {
+      "name": "Bitstamp",
+      "slug": "bitstamp",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 1939455,
+        "USDC": 2588428
+      },
+      "total": 4527884
+    },
+    {
+      "name": "Coinstore",
+      "slug": "coinstore",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDC": 668687,
+        "USDT": 3364363
+      },
+      "total": 4033049
+    },
+    {
+      "name": "ProBit Global",
+      "slug": "probit-global",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 2880122,
+        "USDC": 1041224
+      },
+      "total": 3921346
+    },
+    {
+      "name": "Okcoin",
+      "slug": "okcoin",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 1024968,
+        "USDC": 1665794
+      },
+      "total": 2690762
+    },
+    {
+      "name": "Nexo",
+      "slug": "nexo",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 1633835,
+        "USDC": 855403
+      },
+      "total": 2489238
+    },
+    {
+      "name": "BigONE",
+      "slug": "bigone",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 2235572,
+        "USDC": 77391
+      },
+      "total": 2312964
+    },
+    {
+      "name": "CEX.IO",
+      "slug": "cex.io",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDC": 1174495,
+        "USDT": 958391
+      },
+      "total": 2132886
+    },
+    {
+      "name": "Tothemoon",
+      "slug": "tothemoon",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDT": 1828371,
+        "USDC": 295979
+      },
+      "total": 2124350
+    },
+    {
+      "name": "P2PB2B",
+      "slug": "p2pb2b",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "USDC": 15513,
+        "USDT": 1041710
+      },
+      "total": 1057223
+    }
+  ],
+  "diagnostics": {
+    "unmatchedStablecoinSymbols": {
+      "USDE": 8446287131.132461,
+      "USD1": 3701536654.61971,
+      "USDG": 2552622962.81841,
+      "USDY": 2140056930.60247,
+      "USDT0": 1684138286.2283201,
+      "USDF": 1338750528.44405,
+      "SUSDE": 1226387312.5280201,
+      "USDGO": 1111601292.56917,
+      "PYUSD": 1029355817.28091,
+      "USDS": 855211519.64855,
+      "SYRUPUSDT": 652777674.58423,
+      "SYRUPUSDC": 614910236.31642,
+      "SPUSDT": 490665690.10102,
+      "SUSDC": 420774666.41268,
+      "USDD": 392280357.15601,
+      "RLUSD": 318440819.50725,
+      "FDUSD": 315102179.09079,
+      "GUSD": 314426231.81431,
+      "SPUSDC": 268292012.02984002,
+      "SYRUPUSDG": 190106092.20973,
+      "CRVUSD": 189306897.87562,
+      "SUSDS": 172913013.65846002,
+      "REUSD": 139288936.17583,
+      "AETHUSDT": 131308226.41568,
+      "USDAT": 119611119.67476001,
+      "APYUSD": 118931714.56842001,
+      "PT-SUSDE-22OCT2026": 109095374.08969,
+      "AUSD": 103859949.51276,
+      "PT-REUSD-10DEC2026": 82025794.00216,
+      "WSRUSD": 70971197.05503,
+      "USDON": 70586150.90503,
+      "SAVUSD": 68977699.07935,
+      "JUPUSD": 66983286.30955,
+      "SUSDAI": 66570989.75219,
+      "AA_FALCONXUSDC": 65513195.44654,
+      "USDAI": 60046497.25265,
+      "SRUSDE": 56777430.32552,
+      "STCUSD": 55228864.19138,
+      "BUSD": 54649385.29568,
+      "THUSD": 51593188.92453
+    }
+  }
+}
