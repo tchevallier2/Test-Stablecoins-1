@@ -288,13 +288,26 @@ def validate_allocations() -> None:
                 f"across venues ({attributed:,})"
             )
 
+        # Attributing more than a coin's own supply is only tolerable at the
+        # margin, where overlapping venue labels can genuinely double count.
+        # A large overshoot is a bug — the asset's own issuing protocol counted
+        # as a venue, a roll-up TVL key, or a supply figure read off the wrong
+        # same-ticker asset — and should fail rather than ship.
         circulating = summary.get("circulating")
-        if circulating and stated and stated > circulating * 1.02:
-            # Not fatal: overlapping labels can exceed supply. Worth seeing.
-            warn(
-                f"{ALLOCATIONS_PATH}: {ticker} attributes more than its reported "
-                f"supply (${stated:,} vs ${circulating:,}) — likely overlapping labels"
-            )
+        if circulating and stated:
+            ratio = stated / circulating
+            if ratio > 1.25:
+                err(
+                    f"{ALLOCATIONS_PATH}: {ticker} attributes {ratio:.1f}x its "
+                    f"reported supply (${stated:,} vs ${circulating:,}) — "
+                    f"double counting or a mismatched supply figure"
+                )
+            elif ratio > 1.02:
+                warn(
+                    f"{ALLOCATIONS_PATH}: {ticker} attributes slightly more than "
+                    f"its reported supply (${stated:,} vs ${circulating:,}) — "
+                    f"likely overlapping venue labels"
+                )
 
     by_kind = payload.get("byKind") or {}
     if by_kind:

@@ -94,6 +94,11 @@ CEX_CATEGORIES = {"CEX"}
 # composition chart does not imply it is deployed capital.
 BRIDGE_CATEGORIES = {"Bridge"}
 
+# chainTvls carries roll-up keys alongside real chains, both bare ("borrowed")
+# and chain-prefixed ("Ethereum-borrowed"). They restate balances already
+# counted under a chain, so including them double counts lending markets.
+AGGREGATE_TVL_KEYS = {"borrowed", "staking", "pool2", "vesting", "treasury"}
+
 MAX_DEFI_PROTOCOLS = int(os.environ.get("MAX_DEFI_PROTOCOLS", "45"))
 REQUEST_PAUSE_SECONDS = 0.35  # free tier is ~500 requests per 5 minutes
 
@@ -204,8 +209,14 @@ def latest_token_breakdown(payload: dict) -> dict[str, dict[str, float]]:
     by_chain: dict[str, dict[str, float]] = {}
 
     for chain, chain_data in (payload.get("chainTvls") or {}).items():
-        # Aggregate keys restate balances counted under a real chain.
-        if any(k in chain for k in ("-borrowed", "-staking", "-pool2", "-vesting")):
+        # Aggregate keys restate balances already counted under a real chain.
+        # They appear both bare ("borrowed") and chain-prefixed
+        # ("Ethereum-borrowed"); matching only the prefixed form let the bare
+        # ones through and double counted every lending market.
+        lowered = chain.lower()
+        if lowered in AGGREGATE_TVL_KEYS or any(
+            lowered.endswith(f"-{k}") for k in AGGREGATE_TVL_KEYS
+        ):
             continue
         series = (chain_data or {}).get("tokensInUsd")
         if not series:
@@ -257,7 +268,12 @@ def fetch_circulating(tokens: dict[str, dict]) -> dict[str, dict]:
             continue
         circulating = row.get("circulating") or {}
         total = sum(v for v in circulating.values() if isinstance(v, (int, float)))
-        if total:
+        if not total:
+            continue
+        # Several listed assets can share a ticker. The dashboard tracks the
+        # major one, so keep the largest rather than whichever came last.
+        previous = result.get(symbol)
+        if previous is None or total > previous["value"]:
             result[symbol] = {"value": total, "source": "defillama"}
 
     fallbacks = 0
@@ -307,8 +323,20 @@ def main() -> int:
             return "bridge"
         return "defi"
 
+    def is_the_asset_itself(protocol: dict) -> bool:
+        return normalise(protocol.get("symbol")) in tokens
+
+    self_listings = [p for p in defi if is_the_asset_itself(p)]
+    defi = [p for p in defi if not is_the_asset_itself(p)]
+
     selected = [(p, "cex") for p in cexes] + [(p, kind_of(p)) for p in defi]
-    print(f"  Selected {len(cexes)} CEX entries and {len(defi)} DeFi protocols.\n")
+    print(f"  Selected {len(cexes)} CEX entries and {len(defi)} DeFi protocols.")
+    if self_listings:
+        print(
+            "  Excluded as the asset itself rather than a venue: "
+            + ", ".join(sorted(p.get("name", "?") for p in self_listings))
+        )
+    print()
 
     venues: list[dict] = []
     chain_totals: dict[str, dict] = {}
