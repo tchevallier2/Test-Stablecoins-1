@@ -324,7 +324,22 @@ def main() -> int:
         return "defi"
 
     def is_the_asset_itself(protocol: dict) -> bool:
-        return normalise(protocol.get("symbol")) in tokens
+        """
+        True when a protocol entry represents a scoped coin's own backing
+        rather than a venue holding it.
+
+        Symbol is the reliable signal but not a complete one: "Ethena USDe"
+        carries its governance token as `symbol`, so it slipped through and
+        attributed the whole of USDe's backing to itself — 191% of supply.
+        Falling back to the name catches that shape ("<issuer> <ticker>").
+        """
+        if normalise(protocol.get("symbol")) in tokens:
+            return True
+        name = re.sub(r"[^A-Za-z0-9]", "", protocol.get("name") or "").upper()
+        return any(
+            len(ticker) >= 3 and name.endswith(ticker) and name != ticker
+            for ticker in tokens
+        )
 
     self_listings = [p for p in defi if is_the_asset_itself(p)]
     defi = [p for p in defi if not is_the_asset_itself(p)]
@@ -341,6 +356,7 @@ def main() -> int:
     venues: list[dict] = []
     chain_totals: dict[str, dict] = {}
     unmatched: dict[str, float] = {}
+    negatives: dict[str, float] = {}
     failures = 0
 
     for index, (protocol, kind) in enumerate(selected, start=1):
@@ -367,6 +383,13 @@ def main() -> int:
         for chain, symbols in latest_token_breakdown(payload).items():
             for symbol, usd in symbols.items():
                 canonical = match_token(symbol, alias_index)
+                # Some lending entries report net of borrowing and can go
+                # negative. "How much sits here" cannot be below zero, and a
+                # negative would silently offset a real balance elsewhere.
+                if usd < 0:
+                    if canonical:
+                        negatives[f"{name}:{canonical}"] = round(usd)
+                    continue
                 if canonical:
                     holdings[canonical] = holdings.get(canonical, 0.0) + usd
                     venue_chains[chain] = venue_chains.get(chain, 0.0) + usd
@@ -459,7 +482,10 @@ def main() -> int:
         "diagnostics": {
             "unmatchedStablecoinSymbols": dict(
                 sorted(unmatched.items(), key=lambda kv: -kv[1])[:40]
-            )
+            ),
+            "negativeBalancesDropped": dict(
+                sorted(negatives.items(), key=lambda kv: kv[1])[:20]
+            ),
         },
     }
 
