@@ -38,10 +38,10 @@
     "USDT": {
       "label": "Tether USD",
       "ticker": "USDT",
-      "circulating": 183187571650,
+      "circulating": 183194061782,
       "circulatingSource": "defillama",
-      "attributed": 69584778383,
-      "unattributed": 113602793267,
+      "attributed": 69599512114,
+      "unattributed": 113594549668,
       "attributedPct": 37.99,
       "venueCount": 68
     },
@@ -50,9 +50,9 @@
       "ticker": "XAUT",
       "circulating": 2653720078,
       "circulatingSource": "dashboard",
-      "attributed": 743727884,
-      "unattributed": 1909992194,
-      "attributedPct": 28.03,
+      "attributed": 743683124,
+      "unattributed": 1910036954,
+      "attributedPct": 28.02,
       "venueCount": 42
     },
     "USDT0": {
@@ -60,7 +60,7 @@
       "ticker": "USDT0",
       "circulating": null,
       "circulatingSource": null,
-      "attributed": 1147122100,
+      "attributed": 1148694289,
       "unattributed": null,
       "attributedPct": null,
       "venueCount": 44
@@ -68,60 +68,60 @@
     "USDC": {
       "label": "USD Coin",
       "ticker": "USDC",
-      "circulating": 73612625647,
+      "circulating": 73595834731,
       "circulatingSource": "defillama",
-      "attributed": 27707903599,
-      "unattributed": 45904722048,
-      "attributedPct": 37.64,
+      "attributed": 27707204224,
+      "unattributed": 45888630507,
+      "attributedPct": 37.65,
       "venueCount": 71
     },
     "EURC": {
       "label": "Euro Coin",
       "ticker": "EURC",
-      "circulating": 454001113,
+      "circulating": 454200169,
       "circulatingSource": "defillama",
-      "attributed": 23390058,
-      "unattributed": 430611055,
+      "attributed": 23396588,
+      "unattributed": 430803581,
       "attributedPct": 5.15,
       "venueCount": 13
     },
     "USDS": {
       "label": "Sky Dollar",
       "ticker": "USDS",
-      "circulating": 6344838986,
+      "circulating": 6649730280,
       "circulatingSource": "defillama",
-      "attributed": 370546969,
-      "unattributed": 5974292017,
-      "attributedPct": 5.84,
+      "attributed": 370546087,
+      "unattributed": 6279184193,
+      "attributedPct": 5.57,
       "venueCount": 12
     },
     "DAI": {
       "label": "Dai",
       "ticker": "DAI",
-      "circulating": 4784411395,
+      "circulating": 4789693167,
       "circulatingSource": "defillama",
-      "attributed": 217591627,
-      "unattributed": 4566819768,
-      "attributedPct": 4.55,
+      "attributed": 217581212,
+      "unattributed": 4572111955,
+      "attributedPct": 4.54,
       "venueCount": 38
     },
     "USDE": {
       "label": "Ethena USD",
       "ticker": "USDe",
-      "circulating": 4090716381,
+      "circulating": 4091234132,
       "circulatingSource": "defillama",
-      "attributed": 3991649737,
-      "unattributed": 99066644,
-      "attributedPct": 97.58,
+      "attributed": 3996269883,
+      "unattributed": 94964249,
+      "attributedPct": 97.68,
       "venueCount": 25
     },
     "USDTB": {
       "label": "Ethena USD Treasury-backed",
       "ticker": "USDtb",
-      "circulating": 333570164,
+      "circulating": 333640945,
       "circulatingSource": "defillama",
-      "attributed": 12811603,
-      "unattributed": 320758561,
+      "attributed": 12813967,
+      "unattributed": 320826978,
       "attributedPct": 3.84,
       "venueCount": 3
     },
@@ -138,21 +138,21 @@
     "PYUSD": {
       "label": "PayPal USD",
       "ticker": "PYUSD",
-      "circulating": 2877061541,
+      "circulating": 2876965617,
       "circulatingSource": "defillama",
-      "attributed": 398196222,
-      "unattributed": 2478865319,
+      "attributed": 398225473,
+      "unattributed": 2478740144,
       "attributedPct": 13.84,
       "venueCount": 15
     },
     "USDP": {
       "label": "Pax Dollar",
       "ticker": "USDP",
-      "circulating": 29197683,
+      "circulating": 29180461,
       "circulatingSource": "defillama",
-      "attributed": 484218,
-      "unattributed": 28713465,
-      "attributedPct": 1.66,
+      "attributed": 480601,
+      "unattributed": 28699860,
+      "attributedPct": 1.65,
       "venueCount": 3
     },
     "PAXG": {
@@ -160,8 +160,8 @@
       "ticker": "PAXG",
       "circulating": 1895883603,
       "circulatingSource": "dashboard",
-      "attributed": 520827620,
-      "unattributed": 1375055983,
+      "attributed": 520845552,
+      "unattributed": 1375038051,
       "attributedPct": 27.47,
       "venueCount": 36
     },
@@ -178,61 +178,61 @@
     "RLUSD": {
       "label": "Ripple USD",
       "ticker": "RLUSD",
-      "circulating": 2073713516,
+      "circulating": 2073568652,
       "circulatingSource": "defillama",
-      "attributed": 68326370,
-      "unattributed": 2005387146,
-      "attributedPct": 3.29,
+      "attributed": 67709566,
+      "unattributed": 2005859086,
+      "attributedPct": 3.27,
       "venueCount": 3
     },
     "FDUSD": {
       "label": "First Digital USD",
       "ticker": "FDUSD",
-      "circulating": 351315220,
+      "circulating": 351290884,
       "circulatingSource": "defillama",
-      "attributed": 320283340,
-      "unattributed": 31031880,
+      "attributed": 320283358,
+      "unattributed": 31007526,
       "attributedPct": 91.17,
       "venueCount": 24
     },
     "FRXUSD": {
       "label": "Frax USD",
       "ticker": "frxUSD",
-      "circulating": 108830871,
+      "circulating": 108818762,
       "circulatingSource": "defillama",
-      "attributed": 23760124,
-      "unattributed": 85070747,
-      "attributedPct": 21.83,
+      "attributed": 23769307,
+      "unattributed": 85049455,
+      "attributedPct": 21.84,
       "venueCount": 2
     },
     "FRAX": {
       "label": "Frax",
       "ticker": "FRAX",
-      "circulating": 160513785,
+      "circulating": 160506660,
       "circulatingSource": "defillama",
-      "attributed": 35864199,
-      "unattributed": 124649586,
-      "attributedPct": 22.34,
+      "attributed": 35874378,
+      "unattributed": 124632282,
+      "attributedPct": 22.35,
       "venueCount": 5
     },
     "FPI": {
       "label": "Frax Price Index",
       "ticker": "FPI",
-      "circulating": 7030131,
+      "circulating": 7017521,
       "circulatingSource": "defillama",
-      "attributed": 79619,
-      "unattributed": 6950512,
+      "attributed": 79611,
+      "unattributed": 6937910,
       "attributedPct": 1.13,
       "venueCount": 2
     },
     "USDY": {
       "label": "US Dollar Yield",
       "ticker": "USDY",
-      "circulating": 2152777103,
+      "circulating": 2152538893,
       "circulatingSource": "defillama",
-      "attributed": 2140565516,
-      "unattributed": 12211587,
-      "attributedPct": 99.43,
+      "attributed": 2133764725,
+      "unattributed": 18774168,
+      "attributedPct": 99.13,
       "venueCount": 3
     },
     "OUSG": {
@@ -247,107 +247,107 @@
     }
   },
   "byKind": {
-    "cex": 73601698201,
-    "defi": 16334002148,
-    "bridge": 17739136304
+    "cex": 73602073869,
+    "defi": 16345518307,
+    "bridge": 17740069353
   },
   "byChain": [
     {
       "chain": "Ethereum",
-      "total": 83182804408,
-      "cex": 62895863726,
-      "defi": 11661257075,
-      "bridge": 8625683606
+      "total": 83194694505,
+      "cex": 62894053342,
+      "defi": 11674021331,
+      "bridge": 8626619833
     },
     {
       "chain": "Tron",
-      "total": 6681207626,
-      "cex": 4032240594,
+      "total": 6682422529,
+      "cex": 4033455498,
       "defi": 111486056,
       "bridge": 2537480975
     },
     {
       "chain": "Hyperliquid L1",
-      "total": 6091344246,
-      "cex": 56593985,
-      "defi": 15367174,
+      "total": 6091077901,
+      "cex": 56359786,
+      "defi": 15335028,
       "bridge": 6019383087
     },
     {
       "chain": "Solana",
-      "total": 3752239313,
-      "cex": 2970606435,
-      "defi": 781632878,
+      "total": 3751278752,
+      "cex": 2970436008,
+      "defi": 780842744,
       "bridge": 0
     },
     {
       "chain": "Binance",
-      "total": 1736848259,
-      "cex": 744135590,
-      "defi": 992515264,
-      "bridge": 197405
+      "total": 1738210813,
+      "cex": 745631929,
+      "defi": 992381486,
+      "bridge": 197399
     },
     {
       "chain": "Arbitrum",
-      "total": 992558005,
-      "cex": 369629776,
-      "defi": 71098429,
-      "bridge": 551829800
+      "total": 990615830,
+      "cex": 369365272,
+      "defi": 69335164,
+      "bridge": 551915394
     },
     {
       "chain": "Base",
-      "total": 918616900,
-      "cex": 246593555,
-      "defi": 671991071,
+      "total": 917887039,
+      "cex": 246764685,
+      "defi": 671090081,
       "bridge": 32273
     },
     {
       "chain": "Avalanche",
-      "total": 613864997,
-      "cex": 339483016,
-      "defi": 274381981,
+      "total": 616963005,
+      "cex": 342595285,
+      "defi": 274367719,
       "bridge": 0
     },
     {
       "chain": "Plasma",
-      "total": 604944582,
-      "cex": 472126656,
-      "defi": 132817926,
+      "total": 609676829,
+      "cex": 473122168,
+      "defi": 136554661,
       "bridge": 0
     },
     {
       "chain": "Stellar",
-      "total": 534362377,
+      "total": 534645537,
       "cex": 14,
-      "defi": 534362363,
+      "defi": 534645523,
       "bridge": 0
     },
     {
       "chain": "Polygon",
-      "total": 302672445,
-      "cex": 274581996,
-      "defi": 28090448,
+      "total": 303894677,
+      "cex": 275795054,
+      "defi": 28099623,
       "bridge": 0
     },
     {
       "chain": "Robinhood Chain",
-      "total": 301175299,
+      "total": 301207381,
       "cex": 0,
-      "defi": 301175299,
+      "defi": 301207381,
       "bridge": 0
     },
     {
       "chain": "Aptos",
-      "total": 291686661,
-      "cex": 288892336,
-      "defi": 2794325,
+      "total": 286622680,
+      "cex": 283837669,
+      "defi": 2785010,
       "bridge": 0
     },
     {
       "chain": "Sei",
-      "total": 263756757,
-      "cex": 1416780,
-      "defi": 262339977,
+      "total": 262618219,
+      "cex": 1416715,
+      "defi": 261201504,
       "bridge": 0
     },
     {
@@ -359,162 +359,162 @@
     },
     {
       "chain": "TON",
-      "total": 210839295,
-      "cex": 210839295,
+      "total": 210857046,
+      "cex": 210857046,
       "defi": 0,
       "bridge": 0
     },
     {
       "chain": "Monad",
-      "total": 199407068,
-      "cex": 70080764,
-      "defi": 129326304,
+      "total": 200147330,
+      "cex": 71008667,
+      "defi": 129138663,
       "bridge": 0
     },
     {
       "chain": "Sui",
-      "total": 197651056,
-      "cex": 183673889,
-      "defi": 13977167,
+      "total": 197553557,
+      "cex": 183638035,
+      "defi": 13915523,
       "bridge": 0
     },
     {
       "chain": "Optimism",
-      "total": 146013274,
-      "cex": 138629769,
-      "defi": 6302020,
-      "bridge": 1081485
+      "total": 146010087,
+      "cex": 138628428,
+      "defi": 6300214,
+      "bridge": 1081445
     },
     {
       "chain": "Mantle",
-      "total": 99731186,
-      "cex": 61203768,
-      "defi": 38527418,
+      "total": 99580036,
+      "cex": 61177926,
+      "defi": 38402110,
       "bridge": 0
     },
     {
       "chain": "Sonic",
-      "total": 85608731,
-      "cex": 84358907,
-      "defi": 1249824,
+      "total": 85389848,
+      "cex": 84139993,
+      "defi": 1249855,
       "bridge": 0
     },
     {
       "chain": "Celo",
-      "total": 64446908,
-      "cex": 58488000,
-      "defi": 2511408,
-      "bridge": 3447500
+      "total": 63907232,
+      "cex": 58035607,
+      "defi": 2512851,
+      "bridge": 3358774
     },
     {
       "chain": "X Layer",
-      "total": 51771091,
-      "cex": 23327678,
-      "defi": 28443241,
+      "total": 51151760,
+      "cex": 22818563,
+      "defi": 28333025,
       "bridge": 172
     },
     {
       "chain": "Near",
-      "total": 39125276,
-      "cex": 39125276,
+      "total": 39111012,
+      "cex": 39111012,
       "defi": 0,
       "bridge": 0
     },
     {
       "chain": "Kava",
-      "total": 26751816,
-      "cex": 26716435,
-      "defi": 35381,
+      "total": 26753097,
+      "cex": 26717714,
+      "defi": 35383,
       "bridge": 0
     },
     {
       "chain": "Plume Mainnet",
-      "total": 21333931,
+      "total": 21332987,
       "cex": 0,
-      "defi": 21333931,
+      "defi": 21332987,
       "bridge": 0
     },
     {
       "chain": "Morph",
-      "total": 10734130,
+      "total": 10734663,
       "cex": 0,
-      "defi": 10734130,
+      "defi": 10734663,
       "bridge": 0
     },
     {
       "chain": "Algorand",
-      "total": 10701588,
-      "cex": 10701588,
+      "total": 10701590,
+      "cex": 10701590,
       "defi": 0,
       "bridge": 0
     },
     {
       "chain": "Pharos",
-      "total": 6595785,
+      "total": 6595493,
       "cex": 0,
-      "defi": 6595785,
+      "defi": 6595493,
       "bridge": 0
     },
     {
       "chain": "Stable",
-      "total": 5948527,
-      "cex": 618098,
-      "defi": 5330429,
+      "total": 5946482,
+      "cex": 617984,
+      "defi": 5328498,
       "bridge": 0
     },
     {
       "chain": "Etherlink",
-      "total": 4196112,
+      "total": 4196156,
       "cex": 0,
-      "defi": 4196112,
+      "defi": 4196156,
       "bridge": 0
     },
     {
       "chain": "World Chain",
-      "total": 2892331,
+      "total": 2899482,
       "cex": 867,
-      "defi": 2891464,
+      "defi": 2898615,
       "bridge": 0
     },
     {
       "chain": "Fraxtal",
-      "total": 2815554,
+      "total": 2816281,
       "cex": 0,
-      "defi": 2815552,
+      "defi": 2816279,
       "bridge": 2
     },
     {
       "chain": "Flare",
-      "total": 2613080,
+      "total": 2571087,
       "cex": 0,
-      "defi": 2613080,
+      "defi": 2571087,
       "bridge": 0
     },
     {
       "chain": "zkSync Era",
-      "total": 2432375,
-      "cex": 2287698,
-      "defi": 144677,
+      "total": 2432377,
+      "cex": 2287699,
+      "defi": 144678,
       "bridge": 0
     },
     {
       "chain": "Scroll",
-      "total": 2158341,
+      "total": 2158345,
       "cex": 2075404,
-      "defi": 82937,
+      "defi": 82941,
       "bridge": 0
     },
     {
       "chain": "xDai",
-      "total": 2039424,
+      "total": 2034355,
       "cex": 12,
-      "defi": 2039412,
+      "defi": 2034343,
       "bridge": 0
     },
     {
       "chain": "Tezos",
-      "total": 1929847,
-      "cex": 1929847,
+      "total": 1930362,
+      "cex": 1930362,
       "defi": 0,
       "bridge": 0
     }
@@ -566,13 +566,13 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDT": 8311994026,
-        "USDC": 1356624376,
-        "XAUT": 110511189,
-        "USDT0": 33103220,
-        "PAXG": 13177737,
-        "PYUSD": 1944661,
-        "DAI": 651981,
+        "USDT": 8312509921,
+        "USDC": 1353864862,
+        "XAUT": 110540548,
+        "USDT0": 32415218,
+        "PAXG": 13177312,
+        "PYUSD": 1944759,
+        "DAI": 651879,
         "USDE": 1168,
         "USDP": 986,
         "FDUSD": 832,
@@ -580,17 +580,17 @@
         "USDS": 9
       },
       "chains": {
-        "Ethereum": 9429760463,
-        "Tron": 295077116,
-        "Solana": 39191196,
-        "X Layer": 23326860,
-        "Aptos": 17710577,
-        "Arbitrum": 10130851,
-        "Avalanche": 5587651,
-        "Optimism": 4427042,
-        "TON": 2736441
+        "Ethereum": 9431508941,
+        "Tron": 298842397,
+        "Solana": 34082119,
+        "X Layer": 22817746,
+        "Aptos": 15282026,
+        "Arbitrum": 9951979,
+        "Avalanche": 5422469,
+        "Optimism": 4427286,
+        "TON": 2710541
       },
-      "total": 9828010228
+      "total": 9825107537
     },
     {
       "name": "Hyperliquid Bridge",
@@ -612,38 +612,38 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDT": 3836501596,
-        "USDC": 1050887677,
-        "USDE": 216852272,
-        "USDT0": 213406863,
-        "XAUT": 87981545,
-        "PAXG": 775444,
-        "PYUSD": 532336,
-        "DAI": 69693,
-        "FDUSD": 27724
+        "USDT": 3831135439,
+        "USDC": 1060425162,
+        "USDE": 216838842,
+        "USDT0": 214949122,
+        "XAUT": 87588601,
+        "PAXG": 775493,
+        "PYUSD": 533391,
+        "DAI": 69691,
+        "FDUSD": 27721
       },
       "chains": {
-        "Ethereum": 2787726751,
-        "Tron": 1527762016,
-        "Binance": 230776945,
-        "Solana": 127198270,
-        "Avalanche": 120094420,
-        "Monad": 67534028,
-        "Mantle": 61093319,
-        "Arbitrum": 60573191,
-        "Hyperliquid L1": 54583955,
-        "TON": 53975912,
-        "Aptos": 53170167,
-        "Plasma": 53029931,
-        "Base": 49805633,
-        "Polygon": 47357478,
-        "Optimism": 28048628,
-        "Sui": 27798238,
-        "Sonic": 26146999,
-        "Kava": 24342942,
-        "Celo": 6016328
+        "Ethereum": 2784978283,
+        "Tron": 1527123076,
+        "Binance": 232354145,
+        "Solana": 130490624,
+        "Avalanche": 122395562,
+        "Monad": 68462110,
+        "Mantle": 61067483,
+        "Arbitrum": 60271794,
+        "Hyperliquid L1": 54349851,
+        "Plasma": 54171323,
+        "TON": 54035058,
+        "Aptos": 53399974,
+        "Base": 49772040,
+        "Polygon": 47563407,
+        "Optimism": 28049527,
+        "Sui": 27799503,
+        "Sonic": 25928085,
+        "Kava": 24344268,
+        "Celo": 5787351
       },
-      "total": 5407035151
+      "total": 5412343463
     },
     {
       "name": "LayerZero V2",
@@ -651,28 +651,28 @@
       "kind": "bridge",
       "category": "Bridge",
       "holdings": {
-        "USDT": 3330820044,
-        "USDE": 1793787729,
-        "XAUT": 136491060,
-        "PYUSD": 40457976,
-        "USDT0": 16314947,
-        "USDS": 8533568,
-        "USDC": 3096866,
-        "EURC": 1985510,
-        "DAI": 71953,
-        "PAXG": 6699,
-        "USDTB": 232,
+        "USDT": 3330727223,
+        "USDE": 1794899762,
+        "XAUT": 136513836,
+        "PYUSD": 40457927,
+        "USDT0": 16311706,
+        "USDS": 8532950,
+        "USDC": 3098928,
+        "EURC": 1986234,
+        "DAI": 71947,
+        "PAXG": 6697,
+        "USDTB": 231,
         "FRAX": 172,
         "USDY": 2,
         "FPI": 2
       },
       "chains": {
-        "Ethereum": 5276244164,
-        "Arbitrum": 50563755,
-        "Celo": 3447500,
-        "Optimism": 1081485
+        "Ethereum": 5277288201,
+        "Arbitrum": 50649349,
+        "Celo": 3358774,
+        "Optimism": 1081445
       },
-      "total": 5331566760
+      "total": 5332607619
     },
     {
       "name": "Sky Lending",
@@ -680,15 +680,15 @@
       "kind": "defi",
       "category": "CDP",
       "holdings": {
-        "USDC": 4006942251,
-        "DAI": 24029,
-        "USDP": 1172,
+        "USDC": 4001732558,
+        "DAI": 24038,
+        "USDP": 1149,
         "USDT": 590
       },
       "chains": {
-        "Ethereum": 4006968041
+        "Ethereum": 4001758335
       },
-      "total": 4006968041
+      "total": 4001758335
     },
     {
       "name": "USDT0",
@@ -696,12 +696,12 @@
       "kind": "bridge",
       "category": "Bridge",
       "holdings": {
-        "USDT": 3322944439
+        "USDT": 3322836629
       },
       "chains": {
-        "Ethereum": 3322944439
+        "Ethereum": 3322836629
       },
-      "total": 3322944439
+      "total": 3322836629
     },
     {
       "name": "Maple",
@@ -736,21 +736,21 @@
       "kind": "defi",
       "category": "RWA",
       "holdings": {
-        "USDY": 2140565512,
+        "USDY": 2133764721,
         "OUSG": 366927461
       },
       "chains": {
-        "Ethereum": 1274551385,
-        "Stellar": 534362363,
-        "Sei": 258183799,
+        "Ethereum": 1269609329,
+        "Stellar": 534645523,
+        "Sei": 257045113,
         "Ripple": 212929786,
-        "Solana": 179153781,
-        "Mantle": 28584618,
-        "Sui": 13977167,
-        "Arbitrum": 3638083,
-        "Aptos": 2111990
+        "Solana": 178363646,
+        "Mantle": 28458549,
+        "Sui": 13915523,
+        "Arbitrum": 3622038,
+        "Aptos": 2102675
       },
-      "total": 2507492972
+      "total": 2500692182
     },
     {
       "name": "MEXC",
@@ -758,28 +758,28 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDT": 1906114637,
-        "USDC": 195673760,
-        "USDE": 114765173,
-        "USDT0": 21738186,
-        "XAUT": 7191378,
-        "PAXG": 4225134,
-        "FDUSD": 155838,
+        "USDT": 1904255616,
+        "USDC": 194368676,
+        "USDE": 114651658,
+        "USDT0": 22741925,
+        "XAUT": 7188093,
+        "PAXG": 4256777,
+        "FDUSD": 155825,
         "DAI": 1
       },
       "chains": {
-        "Ethereum": 2107152868,
-        "Tron": 56048198,
-        "Binance": 32629393,
-        "Arbitrum": 21013264,
-        "Solana": 20514604,
-        "Aptos": 3711518,
-        "TON": 2712042,
-        "Avalanche": 2288300,
-        "Polygon": 1907925,
-        "Optimism": 1879103
+        "Ethereum": 2105473732,
+        "Tron": 55721752,
+        "Binance": 32603135,
+        "Arbitrum": 21062537,
+        "Solana": 20684232,
+        "Polygon": 2903123,
+        "TON": 2696179,
+        "Avalanche": 2351741,
+        "Aptos": 1998599,
+        "Optimism": 1879691
       },
-      "total": 2249864107
+      "total": 2247618571
     },
     {
       "name": "Centrifuge Protocol",
@@ -787,18 +787,18 @@
       "kind": "defi",
       "category": "RWA",
       "holdings": {
-        "USDC": 1635421466
+        "USDC": 1635404079
       },
       "chains": {
-        "Ethereum": 1273555876,
-        "Avalanche": 261503312,
-        "Base": 58132958,
-        "Plume Mainnet": 21333785,
-        "Monad": 15119256,
-        "Pharos": 4491998,
-        "Binance": 1030599
+        "Ethereum": 1273551160,
+        "Avalanche": 261494365,
+        "Base": 58130969,
+        "Plume Mainnet": 21332842,
+        "Monad": 15118706,
+        "Pharos": 4491799,
+        "Binance": 1030564
       },
-      "total": 1635421466
+      "total": 1635404079
     },
     {
       "name": "Bitget",
@@ -837,37 +837,37 @@
       "kind": "defi",
       "category": "Lending",
       "holdings": {
-        "USDE": 523057557,
-        "USDC": 323412953,
-        "USDT": 261263115,
-        "XAUT": 69937147,
-        "USDT0": 60937811,
-        "DAI": 30603518,
-        "EURC": 18952845,
-        "USDS": 11935805,
-        "USDTB": 3031820,
-        "RLUSD": 2121480,
-        "FDUSD": 164441,
-        "FRAX": 146786,
-        "PYUSD": 132224
+        "USDE": 526627876,
+        "USDC": 321834276,
+        "USDT": 259629138,
+        "XAUT": 69917817,
+        "USDT0": 60849672,
+        "DAI": 30599676,
+        "EURC": 18936230,
+        "USDS": 11931678,
+        "USDTB": 3031951,
+        "RLUSD": 2121095,
+        "FDUSD": 164423,
+        "FRAX": 146779,
+        "PYUSD": 131794
       },
       "chains": {
-        "Ethereum": 887629264,
-        "Plasma": 129974775,
-        "Monad": 98281569,
-        "Arbitrum": 52386304,
-        "Base": 33671228,
-        "X Layer": 27953693,
-        "Polygon": 26040173,
-        "Binance": 18440044,
-        "Avalanche": 12367067,
-        "Mantle": 8897252,
-        "Optimism": 4948188,
-        "Celo": 1989416,
-        "xDai": 1412839,
-        "Sonic": 1189240
+        "Ethereum": 886528885,
+        "Plasma": 133712056,
+        "Monad": 98141672,
+        "Arbitrum": 50652551,
+        "Base": 33374620,
+        "X Layer": 27841486,
+        "Polygon": 26049424,
+        "Binance": 18306295,
+        "Avalanche": 12361718,
+        "Mantle": 8897903,
+        "Optimism": 4946718,
+        "Celo": 1990418,
+        "xDai": 1412913,
+        "Sonic": 1189267
       },
-      "total": 1305697503
+      "total": 1305922404
     },
     {
       "name": "Morpho Blue",
@@ -875,36 +875,36 @@
       "kind": "defi",
       "category": "Lending",
       "holdings": {
-        "USDE": 643190866,
-        "USDC": 381871760,
-        "PYUSD": 102906656,
-        "RLUSD": 46780756,
-        "USDT": 34747373,
-        "USDS": 33248676,
-        "XAUT": 6996353,
-        "USDT0": 5988611,
-        "EURC": 1354259,
-        "DAI": 575331,
-        "PAXG": 340723,
-        "FRXUSD": 228047,
+        "USDE": 643260088,
+        "USDC": 381720330,
+        "PYUSD": 102917234,
+        "USDT": 57479665,
+        "RLUSD": 46167189,
+        "USDS": 33252240,
+        "XAUT": 6997846,
+        "USDT0": 5944408,
+        "EURC": 1376713,
+        "DAI": 575238,
+        "PAXG": 340868,
+        "FRXUSD": 228099,
         "FRAX": 976,
         "USDY": 2
       },
       "chains": {
-        "Base": 577677687,
-        "Ethereum": 319632904,
-        "Robinhood Chain": 301175296,
-        "Hyperliquid L1": 15039428,
-        "Monad": 12810903,
-        "Morph": 10734130,
-        "Stable": 5329935,
-        "Sei": 4156178,
-        "World Chain": 2891464,
-        "Arbitrum": 2657621,
-        "Flare": 2613080,
-        "Pharos": 2103787
+        "Base": 577161755,
+        "Ethereum": 342279662,
+        "Robinhood Chain": 301207378,
+        "Hyperliquid L1": 15007316,
+        "Monad": 12764129,
+        "Morph": 10734663,
+        "Stable": 5328004,
+        "Sei": 4156391,
+        "World Chain": 2898615,
+        "Arbitrum": 2640295,
+        "Flare": 2571087,
+        "Pharos": 2103694
       },
-      "total": 1258230389
+      "total": 1280260896
     },
     {
       "name": "KuCoin",
@@ -912,29 +912,29 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDT": 1027522642,
-        "USDC": 67483492,
-        "USDT0": 30393907,
-        "PAXG": 11474946,
-        "XAUT": 5929130,
-        "USDE": 241991,
-        "DAI": 1801
+        "USDT": 1028065340,
+        "USDC": 67240571,
+        "USDT0": 30606234,
+        "PAXG": 11471222,
+        "XAUT": 5916798,
+        "USDE": 241980,
+        "DAI": 1802
       },
       "chains": {
-        "Ethereum": 601230759,
-        "Solana": 314745087,
-        "Tron": 80521826,
-        "Binance": 78939703,
-        "Arbitrum": 35690897,
-        "TON": 11534717,
-        "Sui": 5355194,
-        "Base": 4059854,
-        "Optimism": 3638790,
-        "Avalanche": 2965018,
-        "Aptos": 2819349,
-        "Kava": 1076708
+        "Ethereum": 601213099,
+        "Solana": 316259194,
+        "Tron": 79342916,
+        "Binance": 78890892,
+        "Arbitrum": 35905181,
+        "TON": 11535077,
+        "Sui": 5355394,
+        "Base": 4059871,
+        "Optimism": 3638779,
+        "Avalanche": 2965035,
+        "Aptos": 2846079,
+        "Kava": 1076687
       },
-      "total": 1143047908
+      "total": 1143543947
     },
     {
       "name": "PancakeSwap AMM",
@@ -961,15 +961,15 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDC": 565492509,
-        "USDT": 65777821,
-        "USDE": 8945536,
-        "PAXG": 2317205
+        "USDC": 565482753,
+        "USDT": 65773682,
+        "USDE": 8945835,
+        "PAXG": 2316600
       },
       "chains": {
-        "Ethereum": 642533072
+        "Ethereum": 642518870
       },
-      "total": 642533072
+      "total": 642518870
     },
     {
       "name": "SparkLend",
@@ -994,33 +994,33 @@
       "kind": "defi",
       "category": "Dexs",
       "holdings": {
-        "USDC": 166541389,
-        "USDT": 88380763,
-        "DAI": 45290804,
-        "FRAX": 35716263,
-        "PYUSD": 26244835,
-        "FRXUSD": 23532077,
-        "RLUSD": 19424134,
-        "USDTB": 9779551,
-        "USDE": 9413338,
-        "USDT0": 4064806,
-        "USDS": 2142751,
-        "XAUT": 662642,
-        "USDP": 482060,
-        "PAXG": 217017,
-        "EURC": 198832,
-        "FPI": 79617,
-        "FDUSD": 1229
+        "USDC": 167878614,
+        "USDT": 88385629,
+        "DAI": 45284617,
+        "FRAX": 35726449,
+        "PYUSD": 26256020,
+        "FRXUSD": 23541208,
+        "RLUSD": 19421282,
+        "USDTB": 9781785,
+        "USDE": 9408125,
+        "USDT0": 4086889,
+        "USDS": 2142980,
+        "XAUT": 662778,
+        "USDP": 478466,
+        "PAXG": 217110,
+        "EURC": 198804,
+        "FPI": 79609,
+        "FDUSD": 1231
       },
       "chains": {
-        "Ethereum": 412781519,
-        "Etherlink": 3848155,
-        "Monad": 3055961,
-        "Fraxtal": 2815525,
-        "Arbitrum": 2767982,
-        "Plasma": 2385183
+        "Ethereum": 414147177,
+        "Etherlink": 3848195,
+        "Monad": 3055536,
+        "Fraxtal": 2816252,
+        "Arbitrum": 2771671,
+        "Plasma": 2384589
       },
-      "total": 432172108
+      "total": 433551594
     },
     {
       "name": "Bitfinex",
@@ -1028,21 +1028,21 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDT": 246218346,
-        "XAUT": 117863219,
-        "USDC": 22383899,
-        "USDT0": 1769138,
-        "DAI": 1169014
+        "USDT": 247644749,
+        "XAUT": 118182766,
+        "USDC": 22383816,
+        "USDT0": 1771835,
+        "DAI": 1168827
       },
       "chains": {
-        "Ethereum": 328493356,
-        "Avalanche": 45744490,
-        "Tron": 6818942,
+        "Ethereum": 329232548,
+        "Avalanche": 46753817,
+        "Tron": 6815981,
         "Near": 4025849,
-        "Tezos": 1853922,
-        "Polygon": 1770968
+        "Tezos": 1854053,
+        "Polygon": 1773665
       },
-      "total": 389403616
+      "total": 391151994
     },
     {
       "name": "BingX",
@@ -1050,19 +1050,19 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDT": 354350480,
-        "USDC": 19646691,
+        "USDT": 354350806,
+        "USDC": 19646658,
         "FDUSD": 0,
         "USDT0": 0
       },
       "chains": {
-        "Tron": 168514062,
-        "Binance": 76459608,
-        "Ethereum": 69997110,
-        "Solana": 52084288,
+        "Tron": 168514781,
+        "Binance": 76460243,
+        "Ethereum": 69995751,
+        "Solana": 52084585,
         "TON": 6942104
       },
-      "total": 373997171
+      "total": 373997464
     },
     {
       "name": "Jupiter Lend",
@@ -1125,31 +1125,31 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDT": 146294945,
-        "XAUT": 31737329,
-        "USDT0": 18023615,
-        "USDC": 17517512,
-        "PAXG": 7301890,
-        "FDUSD": 1996481,
-        "PYUSD": 337780,
-        "USDE": 273356,
-        "DAI": 4342
+        "USDT": 144352510,
+        "XAUT": 31743635,
+        "USDT0": 17622440,
+        "USDC": 17325677,
+        "PAXG": 7289523,
+        "FDUSD": 1996530,
+        "PYUSD": 337750,
+        "USDE": 273343,
+        "DAI": 4341
       },
       "chains": {
-        "Ethereum": 73418373,
-        "Tron": 63899794,
-        "Aptos": 25495141,
-        "Binance": 20891245,
-        "Arbitrum": 19775370,
-        "Plasma": 7369115,
-        "Solana": 2355646,
-        "Optimism": 1915493,
-        "Base": 1625962,
-        "Celo": 1436518,
-        "Kava": 1296786,
-        "Avalanche": 1153979
+        "Ethereum": 73731584,
+        "Tron": 62991314,
+        "Aptos": 24321192,
+        "Binance": 20730671,
+        "Arbitrum": 19769121,
+        "Plasma": 7222505,
+        "Solana": 2286637,
+        "Optimism": 1911802,
+        "Base": 1621981,
+        "Kava": 1296759,
+        "Celo": 1213101,
+        "Avalanche": 1057544
       },
-      "total": 223487251
+      "total": 220945749
     },
     {
       "name": "Backpack",
@@ -1157,28 +1157,28 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "PYUSD": 135042444,
-        "USDC": 28072217,
-        "USDT": 3966877,
-        "USDT0": 2724410,
-        "PAXG": 1359265,
-        "EURC": 30391,
+        "PYUSD": 135049288,
+        "USDC": 28011006,
+        "USDT": 3970104,
+        "USDT0": 2723923,
+        "PAXG": 1359847,
+        "EURC": 30386,
         "DAI": 0
       },
       "chains": {
-        "Solana": 148088945,
-        "Ethereum": 6954839,
-        "Aptos": 2299508,
-        "Hyperliquid L1": 1929661,
-        "Polygon": 1811922,
-        "Monad": 1725652,
-        "Sei": 1416780,
-        "Base": 1287474,
-        "Binance": 1285013,
-        "Optimism": 1257694,
-        "Sui": 1196979
+        "Solana": 148110596,
+        "Ethereum": 6955413,
+        "Aptos": 2299419,
+        "Hyperliquid L1": 1929569,
+        "Polygon": 1811749,
+        "Monad": 1725485,
+        "Sei": 1416715,
+        "Binance": 1284995,
+        "Base": 1259140,
+        "Optimism": 1257651,
+        "Sui": 1196938
       },
-      "total": 171195603
+      "total": 171144554
     },
     {
       "name": "Bitunix",
@@ -1278,20 +1278,20 @@
       "kind": "defi",
       "category": "Lending",
       "holdings": {
-        "USDC": 50296945,
-        "USDT": 30725219,
-        "USDT0": 4625929,
-        "USDE": 980728,
-        "USDS": 602636,
-        "XAUT": 267232
+        "USDC": 50188797,
+        "USDT": 30741912,
+        "USDT0": 4625957,
+        "USDE": 980830,
+        "USDS": 602700,
+        "XAUT": 267281
       },
       "chains": {
-        "Ethereum": 74143367,
-        "Arbitrum": 9043379,
-        "Base": 1663970,
-        "Polygon": 1083934
+        "Ethereum": 74151801,
+        "Arbitrum": 9043528,
+        "Base": 1564150,
+        "Polygon": 1083848
       },
-      "total": 87498689
+      "total": 87407477
     },
     {
       "name": "JustLend V1",
@@ -1329,17 +1329,17 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDT": 65601454,
-        "USDC": 1315956,
-        "XAUT": 12772,
+        "USDT": 65450084,
+        "USDC": 1315909,
+        "XAUT": 12777,
         "USDT0": 0
       },
       "chains": {
-        "Ethereum": 40254107,
-        "Tron": 24574017,
-        "Aptos": 2101155
+        "Ethereum": 40102823,
+        "Tron": 24573900,
+        "Aptos": 2101143
       },
-      "total": 66930182
+      "total": 66778769
     },
     {
       "name": "BloFin",
@@ -1373,21 +1373,21 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDT": 44356966,
-        "XAUT": 4911518,
-        "USDT0": 4232846,
-        "PAXG": 2800811,
-        "USDC": 1858752,
+        "USDT": 44862717,
+        "XAUT": 4913391,
+        "USDT0": 4239405,
+        "PAXG": 2801100,
+        "USDC": 1866214,
         "DAI": 16334,
         "FDUSD": 73
       },
       "chains": {
-        "Binance": 21053088,
-        "Tron": 18593829,
-        "Ethereum": 13301530,
-        "Polygon": 4679682
+        "Binance": 21090060,
+        "Tron": 19067702,
+        "Ethereum": 13303929,
+        "Polygon": 4689127
       },
-      "total": 58177299
+      "total": 58699234
     },
     {
       "name": "SwissBorg",
@@ -1439,22 +1439,22 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDT": 43619754,
-        "USDC": 1869178,
-        "USDT0": 1186237,
-        "PAXG": 123510,
-        "XAUT": 47694,
+        "USDT": 43629011,
+        "USDC": 1872536,
+        "USDT0": 1187036,
+        "PAXG": 123563,
+        "XAUT": 47703,
         "PYUSD": 1551,
         "DAI": 0,
         "FDUSD": 0
       },
       "chains": {
-        "Ethereum": 34107896,
-        "Tron": 6081674,
-        "Binance": 2772923,
-        "Arbitrum": 1110907
+        "Ethereum": 34111958,
+        "Tron": 6068899,
+        "Binance": 2789876,
+        "Arbitrum": 1110953
       },
-      "total": 46847925
+      "total": 46861401
     },
     {
       "name": "VALR",
@@ -1462,18 +1462,18 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDT": 30510592,
-        "USDC": 10252410,
-        "XAUT": 666326,
+        "USDT": 30528407,
+        "USDC": 10252294,
+        "XAUT": 666459,
         "FDUSD": 0,
         "DAI": 0
       },
       "chains": {
-        "Ethereum": 22209985,
-        "Tron": 10401424,
-        "Solana": 8149125
+        "Ethereum": 22209135,
+        "Tron": 10420088,
+        "Solana": 8149144
       },
-      "total": 41429329
+      "total": 41447160
     },
     {
       "name": "Gate US",
@@ -1501,13 +1501,13 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDC": 19997942,
-        "USDT": 8001544
+        "USDC": 19997298,
+        "USDT": 8001388
       },
       "chains": {
-        "Ethereum": 27996563
+        "Ethereum": 27995764
       },
-      "total": 27999486
+      "total": 27998687
     },
     {
       "name": "Ourbit",
@@ -1603,17 +1603,17 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDT": 12070300,
-        "XAUT": 5494610,
-        "USDT0": 868471,
-        "USDC": 842309
+        "USDT": 12161135,
+        "XAUT": 5495701,
+        "USDT0": 874468,
+        "USDC": 855109
       },
       "chains": {
-        "Ethereum": 12008886,
-        "Tron": 3458581,
-        "Binance": 1821215
+        "Ethereum": 12021964,
+        "Tron": 3485307,
+        "Binance": 1871620
       },
-      "total": 19275690
+      "total": 19386413
     },
     {
       "name": "Hibt",
@@ -1636,18 +1636,18 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDC": 7892483,
-        "USDT": 6981705,
-        "XAUT": 1807280,
-        "USDT0": 2839,
+        "USDC": 7892531,
+        "USDT": 6956485,
+        "XAUT": 1807611,
+        "USDT0": 2838,
         "USDE": 287,
         "DAI": 48
       },
       "chains": {
-        "Ethereum": 14921088,
-        "Tron": 1690367
+        "Ethereum": 14902854,
+        "Tron": 1683683
       },
-      "total": 16684641
+      "total": 16659800
     },
     {
       "name": "OSL HK",
@@ -1655,17 +1655,17 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDT": 14225990,
-        "USDC": 2225004,
-        "XAUT": 32249,
-        "PAXG": 13096,
-        "DAI": 4860
+        "USDT": 14225908,
+        "USDC": 2224945,
+        "XAUT": 32255,
+        "PAXG": 13092,
+        "DAI": 4861
       },
       "chains": {
-        "Ethereum": 8050252,
-        "Tron": 7498277
+        "Ethereum": 8050076,
+        "Tron": 7498309
       },
-      "total": 16501199
+      "total": 16501061
     },
     {
       "name": "BitKan",
@@ -1690,13 +1690,13 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDC": 9830350,
-        "USDT": 1972375
+        "USDC": 9830033,
+        "USDT": 1973262
       },
       "chains": {
-        "Ethereum": 11802725
+        "Ethereum": 11803296
       },
-      "total": 11802725
+      "total": 11803296
     },
     {
       "name": "OSL",
@@ -1726,12 +1726,12 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDC": 8299646
+        "USDC": 8299379
       },
       "chains": {
-        "Ethereum": 8299646
+        "Ethereum": 8299379
       },
-      "total": 8299646
+      "total": 8299379
     },
     {
       "name": "Pionex",
@@ -1760,17 +1760,36 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDT": 7673437,
-        "USDT0": 493540,
-        "USDC": 37078,
+        "USDT": 7673410,
+        "USDT0": 493460,
+        "USDC": 37077,
         "DAI": 0
       },
       "chains": {
-        "Ethereum": 2954956,
-        "Binance": 1789459,
-        "Tron": 1684909
+        "Ethereum": 2954898,
+        "Binance": 1789475,
+        "Tron": 1684916
       },
-      "total": 8204056
+      "total": 8203947
+    },
+    {
+      "name": "Nexo",
+      "slug": "nexo",
+      "kind": "cex",
+      "category": "CEX",
+      "holdings": {
+        "PAXG": 5177004,
+        "USDT": 1470371,
+        "USDC": 585833,
+        "USDT0": 562739,
+        "XAUT": 88993,
+        "DAI": 25592,
+        "FDUSD": 792
+      },
+      "chains": {
+        "Ethereum": 6372362
+      },
+      "total": 7911324
     },
     {
       "name": "LeveX",
@@ -1790,25 +1809,6 @@
         "Solana": 1498309
       },
       "total": 7886974
-    },
-    {
-      "name": "Nexo",
-      "slug": "nexo",
-      "kind": "cex",
-      "category": "CEX",
-      "holdings": {
-        "PAXG": 5174790,
-        "USDT": 1456983,
-        "USDT0": 561721,
-        "USDC": 558296,
-        "XAUT": 88976,
-        "DAI": 25597,
-        "FDUSD": 792
-      },
-      "chains": {
-        "Ethereum": 6362885
-      },
-      "total": 7867154
     },
     {
       "name": "BitVenus",
@@ -1835,13 +1835,13 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDT": 4849143,
-        "USDC": 597207
+        "USDT": 4849212,
+        "USDC": 597205
       },
       "chains": {
-        "Ethereum": 5446350
+        "Ethereum": 5446417
       },
-      "total": 5446350
+      "total": 5446417
     },
     {
       "name": "Bitstamp",
@@ -1849,17 +1849,17 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDC": 2610861,
-        "USDT": 1852902,
+        "USDC": 2620805,
+        "USDT": 1853796,
         "PAXG": 53,
         "EURC": 50,
         "FDUSD": 10,
         "DAI": 0
       },
       "chains": {
-        "Ethereum": 4460522
+        "Ethereum": 4471360
       },
-      "total": 4463877
+      "total": 4474715
     },
     {
       "name": "Coinstore",
@@ -1867,18 +1867,18 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDT": 3365546,
-        "USDC": 668649,
-        "USDT0": 84348,
+        "USDT": 3366038,
+        "USDC": 668646,
+        "USDT0": 84346,
         "XAUT": 3030,
-        "DAI": 2162,
+        "DAI": 2161,
         "PAXG": 1025,
         "FDUSD": 58
       },
       "chains": {
-        "Solana": 3248559
+        "Solana": 3248582
       },
-      "total": 4124817
+      "total": 4125304
     },
     {
       "name": "ProBit Global",
@@ -1886,18 +1886,18 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDT": 2880149,
-        "USDC": 1041201,
-        "USDT0": 108581,
-        "FDUSD": 79664,
-        "PAXG": 10273,
+        "USDT": 2880169,
+        "USDC": 1041185,
+        "USDT0": 108589,
+        "FDUSD": 79665,
+        "PAXG": 10269,
         "XAUT": 200
       },
       "chains": {
-        "Binance": 2346978,
-        "Tron": 1159956
+        "Binance": 2346993,
+        "Tron": 1159961
       },
-      "total": 4120068
+      "total": 4120077
     },
     {
       "name": "Pendle",
@@ -1905,14 +1905,14 @@
       "kind": "defi",
       "category": "Yield",
       "holdings": {
-        "USDE": 3316296,
-        "USDS": 56453,
+        "USDE": 3316649,
+        "USDS": 56459,
         "USDC": 17382
       },
       "chains": {
-        "Ethereum": 2490444
+        "Ethereum": 2490708
       },
-      "total": 3390131
+      "total": 3390491
     },
     {
       "name": "Okcoin",
@@ -1952,16 +1952,16 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDC": 1224454,
-        "USDT": 979480,
-        "USDT0": 97823,
-        "PAXG": 6424,
+        "USDC": 1224416,
+        "USDT": 979476,
+        "USDT0": 97830,
+        "PAXG": 6422,
         "DAI": 64
       },
       "chains": {
-        "Ethereum": 1572979
+        "Ethereum": 1572931
       },
-      "total": 2308245
+      "total": 2308208
     },
     {
       "name": "Tothemoon",
@@ -1969,8 +1969,8 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDT": 1829403,
-        "USDC": 295904,
+        "USDT": 1829497,
+        "USDC": 295895,
         "USDT0": 5636,
         "FDUSD": 2192,
         "PAXG": 1301,
@@ -1978,9 +1978,9 @@
         "DAI": 0
       },
       "chains": {
-        "Tron": 1609508
+        "Tron": 1609515
       },
-      "total": 2134522
+      "total": 2134606
     },
     {
       "name": "Gemini",
@@ -2023,14 +2023,14 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDT": 1041678,
-        "USDC": 15513,
-        "USDT0": 6786
+        "USDT": 1041659,
+        "USDC": 15512,
+        "USDT0": 6787
       },
       "chains": {
-        "Ethereum": 1035357
+        "Ethereum": 1035337
       },
-      "total": 1063977
+      "total": 1063958
     },
     {
       "name": "NonKYC",
@@ -2038,14 +2038,14 @@
       "kind": "cex",
       "category": "CEX",
       "holdings": {
-        "USDT": 685716,
-        "USDC": 245456,
-        "USDT0": 71598,
-        "PAXG": 8731,
+        "USDT": 720783,
+        "USDC": 245452,
+        "USDT0": 71595,
+        "PAXG": 8728,
         "DAI": 318
       },
       "chains": {},
-      "total": 1011819
+      "total": 1046877
     },
     {
       "name": "Hotcoin",
@@ -2067,51 +2067,51 @@
   ],
   "diagnostics": {
     "unmatchedStablecoinSymbols": {
-      "USD1": 3638009361.0080094,
-      "USDG": 1966124356.96293,
-      "USDF": 1338696592.78159,
-      "SUSDE": 1184710679.28954,
-      "USDGO": 1111513413.93571,
-      "SYRUPUSDT": 652934069.68419,
-      "SYRUPUSDC": 605330889.49114,
-      "SPUSDT": 491072829.21198,
+      "USD1": 3639737521.82759,
+      "USDG": 1966143938.44269,
+      "USDF": 1338726730.74725,
+      "SUSDE": 1176963279.29326,
+      "USDGO": 1111531592.5960999,
+      "SYRUPUSDT": 652949342.29497,
+      "SYRUPUSDC": 605337949.9762901,
+      "SPUSDT": 491078900.70151997,
       "SUSDC": 410467897.27287,
       "USDD": 391632549.21208,
-      "GUSD": 312446189.05712,
+      "GUSD": 312314202.01486,
       "SPUSDC": 256216691.01786,
-      "SYRUPUSDG": 189842679.68392998,
-      "CRVUSD": 189792198.32718,
-      "SUSDS": 174646045.50699002,
-      "REUSD": 142533655.24111,
-      "AETHUSDT": 131314097.81316999,
-      "APYUSD": 118760761.11537,
-      "USDAT": 112895751.27019,
-      "PT-SUSDE-22OCT2026": 109096599.51596,
-      "AUSD": 103849368.54722,
-      "PT-REUSD-10DEC2026": 85203673.63583,
-      "USDON": 70597568.19754,
+      "CRVUSD": 189786470.5033,
+      "SYRUPUSDG": 189578871.99031,
+      "SUSDS": 174646020.48634,
+      "REUSD": 142612731.41719,
+      "AETHUSDT": 131312880.91288,
+      "APYUSD": 118969770.77546,
+      "USDAT": 112884637.2238,
+      "PT-SUSDE-22OCT2026": 105096667.92836,
+      "AUSD": 103851075.74432,
+      "PT-REUSD-10DEC2026": 85237377.73702,
+      "USDON": 70596250.9043,
       "SAVUSD": 68980111.36613,
-      "SUSDAI": 66465754.952,
-      "AA_FALCONXUSDC": 65513642.14731,
-      "USDAI": 59479120.43179,
-      "SRUSDE": 56778586.12841,
-      "STCUSD": 55231174.81132,
+      "SUSDAI": 66468277.97674,
+      "AA_FALCONXUSDC": 65512091.4443,
+      "USDAI": 59480495.48974,
+      "SRUSDE": 56780656.10377,
+      "STCUSD": 55231463.63653,
       "BUSD": 54678553.42247,
-      "THUSD": 51590453.18205,
-      "PT-SRUSDE-22OCT2026": 50467219.65319,
-      "APLAUSDT0": 49370867.89741,
-      "SKYMONEYUSDTSAVINGS": 42620375.12997,
-      "WSRUSD": 40631250.51952,
+      "THUSD": 51595550.17005,
+      "PT-SRUSDE-22OCT2026": 50470700.27389,
+      "APLAUSDT0": 49366145.01458,
+      "SKYMONEYUSDTSAVINGS": 42619774.9817,
+      "WSRUSD": 40487490.15071,
       "STUSDT": 39600744.81186,
-      "USD3": 32447671.14311,
-      "APXUSD": 32432881.65147,
-      "PT-SUSDS-26NOV2026": 30553951.82297
+      "USD3": 32448754.60682,
+      "APXUSD": 32442592.99887,
+      "PT-SUSDS-26NOV2026": 30554009.86322
     },
     "negativeBalancesDropped": {
       "Kamino Lend:PYUSD": -213514156,
-      "Aave V3:USDT0": -149243305,
-      "Aave V3:USDT": -113713696,
-      "Morpho Blue:USDTB": -2841920
+      "Aave V3:USDT0": -151266535,
+      "Aave V3:USDT": -113712101,
+      "Morpho Blue:USDTB": -2842610
     }
   }
 }
