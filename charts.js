@@ -803,7 +803,10 @@ function renderBars(container, { items, title, subtitle, format = compactUsd }) 
  * Segments are separated by a 2px gap in the surface colour rather than a
  * stroke, so neighbouring fills read as distinct without adding ink.
  */
-function renderStackedBars(container, { rows, title, subtitle, format = compactUsd, legend = [] }) {
+function renderStackedBars(
+  container,
+  { rows, title, subtitle, format = compactUsd, legend = [], normalise = true }
+) {
   const { figure, plot } = makeFigure(container, {
     title,
     subtitle,
@@ -825,8 +828,14 @@ function renderStackedBars(container, { rows, title, subtitle, format = compactU
   const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, height: H, class: "chart-svg chart-svg-fixed" });
   const tip = makeTooltip(plot);
 
+  // Normalised rows each fill the width, comparing composition. Absolute rows
+  // scale against the largest row, so length carries magnitude as well as mix.
+  const rowTotals = rows.map((r) => r.segments.reduce((sum, s) => sum + Math.max(0, s.value), 0));
+  const maxTotal = Math.max(...rowTotals, 1);
+
   rows.forEach((row, rowIndex) => {
-    const total = row.segments.reduce((sum, s) => sum + Math.max(0, s.value), 0) || 1;
+    const total = rowTotals[rowIndex] || 1;
+    const rowWidth = normalise ? innerW : (total / maxTotal) * innerW;
     const yTop = M.top + rowIndex * rowH + 20;
     const barH = 26;
 
@@ -851,7 +860,7 @@ function renderStackedBars(container, { rows, title, subtitle, format = compactU
     let cursor = M.left;
     row.segments.forEach((segment, i) => {
       const share = Math.max(0, segment.value) / total;
-      const rawWidth = share * innerW;
+      const rawWidth = share * rowWidth;
       const isLast = i === row.segments.length - 1;
       const width = Math.max(0, isLast ? rawWidth : rawWidth - GAP);
       if (rawWidth <= 0) return;

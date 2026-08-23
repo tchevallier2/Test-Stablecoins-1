@@ -1131,7 +1131,16 @@ function renderAllocationView() {
   `;
 
   // ---- Composition per coin ----
-  const rows = Object.entries(tokens).map(([ticker, t]) => {
+  // Scope is every coin the dashboard tracks, but a 21-row chart is unreadable
+  // and the tail is rounding error. Show the coins that carry the market and
+  // say so; the full set stays in the table below.
+  const MAX_COMPOSITION_ROWS = 8;
+  const charted = Object.entries(tokens)
+    .filter(([, t]) => (t.circulating || 0) > 0)
+    .sort((a, b) => (b[1].circulating || 0) - (a[1].circulating || 0))
+    .slice(0, MAX_COMPOSITION_ROWS);
+
+  const rows = charted.map(([ticker, t]) => {
     const held = (kind) =>
       venues
         .filter((v) => v.kind === kind)
@@ -1159,8 +1168,11 @@ function renderAllocationView() {
   renderStackedBars(document.getElementById("chart-allocation"), {
     rows,
     title: "Where each stablecoin sits",
-    subtitle:
-      "Share of total circulating supply. The grey band is supply held at addresses nobody has labelled — it is the largest single bucket, and shrinking it would misrepresent how much of the market is actually accounted for.",
+    subtitle: `Share of each coin's circulating supply, ${
+      charted.length
+    } largest of ${
+      Object.keys(tokens).length
+    } tracked. The grey band is supply held at addresses nobody has labelled — usually the largest single bucket, and shrinking it would misrepresent how much of the market is actually accounted for.`,
     format: formatMarketCap,
     legend: Object.values(VENUE_KINDS),
   });
@@ -1182,7 +1194,41 @@ function renderAllocationView() {
     format: formatMarketCap,
   });
 
+  // ---- Chains ----
+  const chainCard = document.getElementById("chart-alloc-chains");
+  const byChain = (ALLOCATIONS.byChain || []).slice(0, 12);
+
+  if (byChain.length) {
+    renderStackedBars(chainCard, {
+      rows: byChain.map((c) => ({
+        label: c.chain,
+        segments: [
+          { name: VENUE_KINDS.cex.name, value: c.cex || 0, colorVar: VENUE_KINDS.cex.colorVar },
+          { name: VENUE_KINDS.defi.name, value: c.defi || 0, colorVar: VENUE_KINDS.defi.colorVar },
+          {
+            name: VENUE_KINDS.bridge.name,
+            value: c.bridge || 0,
+            colorVar: VENUE_KINDS.bridge.colorVar,
+          },
+        ],
+      })),
+      title: "Attributed balances by chain",
+      subtitle:
+        "Bar length is the amount attributed on that chain; the split shows what it is doing there. Unlike the chain chart in Market Structure, a coin is counted only where its balance actually sits, so these do not overlap.",
+      format: formatMarketCap,
+      normalise: false,
+      legend: [VENUE_KINDS.cex, VENUE_KINDS.defi, VENUE_KINDS.bridge],
+    });
+  } else {
+    chainCard.innerHTML = "";
+  }
+
   // ---- Full table ----
+  // Scope is 21 coins, so a column per coin is impossible. Each venue lists the
+  // coins it actually holds, largest first, which is the useful information and
+  // degrades gracefully as the scope grows.
+  const MAX_COINS_SHOWN = 4;
+
   document.getElementById("allocation-table").innerHTML = `
     <div class="rankings-wrap allocation-wrap">
       <table class="rankings-table">
@@ -1192,15 +1238,28 @@ function renderAllocationView() {
             <th>Venue</th>
             <th>Type</th>
             <th>Category</th>
-            <th class="col-mcap">USDT</th>
-            <th class="col-mcap">USDC</th>
+            <th>Holdings</th>
             <th class="col-mcap">Total</th>
           </tr>
         </thead>
         <tbody>
           ${venues
-            .map(
-              (v, i) => `
+            .map((v, i) => {
+              const entries = Object.entries(v.holdings || {}).sort((a, b) => b[1] - a[1]);
+              const shown = entries.slice(0, MAX_COINS_SHOWN);
+              const rest = entries.length - shown.length;
+              const holdingsHtml =
+                shown
+                  .map(
+                    ([ticker, usd]) =>
+                      `<span class="holding-chip"><span class="holding-ticker">${escapeHtml(
+                        ticker
+                      )}</span> ${escapeHtml(formatMarketCap(usd))}</span>`
+                  )
+                  .join("") +
+                (rest > 0 ? `<span class="holding-chip more">+${rest} more</span>` : "");
+
+              return `
             <tr>
               <td class="col-rank">${i + 1}</td>
               <td><span class="rt-ticker">${escapeHtml(v.name)}</span></td>
@@ -1208,15 +1267,10 @@ function renderAllocationView() {
                 VENUE_KINDS[v.kind]?.name || v.kind
               )}</span></td>
               <td class="rt-issuer">${escapeHtml(v.category || "—")}</td>
-              <td class="col-mcap rt-mcap">${escapeHtml(
-                v.holdings?.USDT ? formatMarketCap(v.holdings.USDT) : "—"
-              )}</td>
-              <td class="col-mcap rt-mcap">${escapeHtml(
-                v.holdings?.USDC ? formatMarketCap(v.holdings.USDC) : "—"
-              )}</td>
+              <td class="holdings-cell">${holdingsHtml}</td>
               <td class="col-mcap rt-mcap">${escapeHtml(formatMarketCap(v.total))}</td>
-            </tr>`
-            )
+            </tr>`;
+            })
             .join("")}
         </tbody>
       </table>

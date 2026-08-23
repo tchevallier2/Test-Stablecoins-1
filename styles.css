@@ -2053,3 +2053,29 @@ body {
   color: var(--text-secondary);
   line-height: 1.6;
 }
+
+.holdings-cell {
+  min-width: 260px;
+}
+
+.holding-chip {
+  display: inline-block;
+  margin: 1px 4px 1px 0;
+  padding: 1px 7px;
+  border-radius: 4px;
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.holding-chip .holding-ticker {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.holding-chip.more {
+  color: var(--text-muted);
+  font-style: italic;
+}
