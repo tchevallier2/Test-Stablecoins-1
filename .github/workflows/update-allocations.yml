@@ -70,6 +70,13 @@ jobs:
           path: allocations.json
           if-no-files-found: warn
 
+      # Fail closed: this job twice committed an allocations.json that CI then
+      # rejected, leaving the branch red until the next run replaced it. The
+      # artifact above still captures a bad file for inspection; only the
+      # commit is gated.
+      - name: Validate before committing
+        run: python scripts/validate_data.py
+
       # `inputs` is null outside workflow_dispatch, and GitHub coerces
       # `null != false` to false — which silently skipped this on push runs.
       - name: Commit if changed
