@@ -19,6 +19,7 @@ from datetime import date, datetime, timedelta
 
 DATA_PATH = "data.js"
 HISTORY_PATH = "history.json"
+ALLOCATIONS_PATH = "allocations.json"
 
 REQUIRED_ISSUER_FIELDS = ("id", "name", "stablecoins")
 REQUIRED_COIN_FIELDS = ("ticker", "name", "peg", "type")
@@ -226,11 +227,100 @@ def validate_history() -> None:
     )
 
 
+def validate_allocations() -> None:
+    """
+    Checks the venue attribution file. Its numbers are aggregates of aggregates,
+    so the useful checks are internal consistency ones: totals that disagree
+    with their parts mean a bucketing bug, not a market event.
+    """
+    if not os.path.exists(ALLOCATIONS_PATH):
+        warn(f"{ALLOCATIONS_PATH} not found — run the allocations workflow to create it")
+        return
+
+    try:
+        with open(ALLOCATIONS_PATH) as f:
+            payload = json.load(f)
+    except json.JSONDecodeError as exc:
+        err(f"{ALLOCATIONS_PATH}: invalid JSON — {exc}")
+        return
+
+    venues = payload.get("venues")
+    tokens = payload.get("tokens") or {}
+    if not isinstance(venues, list) or not venues:
+        err(f"{ALLOCATIONS_PATH}: venues must be a non-empty list")
+        return
+
+    seen_slugs: set[str] = set()
+    for venue in venues:
+        name = venue.get("name") or "<unnamed>"
+
+        slug = venue.get("slug")
+        if slug:
+            if slug in seen_slugs:
+                err(f"{ALLOCATIONS_PATH}: duplicate venue slug {slug!r} — double counts it")
+            seen_slugs.add(slug)
+
+        if venue.get("kind") not in ("cex", "defi", "bridge"):
+            err(f"{ALLOCATIONS_PATH}: {name} has unknown kind {venue.get('kind')!r}")
+
+        holdings = venue.get("holdings") or {}
+        summed = sum(v for v in holdings.values() if isinstance(v, (int, float)))
+        total = venue.get("total")
+        if total is not None and abs(summed - total) > 2:
+            err(
+                f"{ALLOCATIONS_PATH}: {name} total ({total:,}) != sum of its "
+                f"holdings ({summed:,})"
+            )
+        if any(v < 0 for v in holdings.values() if isinstance(v, (int, float))):
+            err(f"{ALLOCATIONS_PATH}: {name} has a negative holding")
+
+    # Per-coin attribution must match what the venues actually report.
+    for ticker, summary in tokens.items():
+        attributed = sum(
+            v.get("holdings", {}).get(ticker, 0)
+            for v in venues
+            if isinstance(v.get("holdings", {}).get(ticker), (int, float))
+        )
+        stated = summary.get("attributed")
+        if stated is not None and abs(attributed - stated) > 2:
+            err(
+                f"{ALLOCATIONS_PATH}: {ticker} attributed ({stated:,}) != sum "
+                f"across venues ({attributed:,})"
+            )
+
+        circulating = summary.get("circulating")
+        if circulating and stated and stated > circulating * 1.02:
+            # Not fatal: overlapping labels can exceed supply. Worth seeing.
+            warn(
+                f"{ALLOCATIONS_PATH}: {ticker} attributes more than its reported "
+                f"supply (${stated:,} vs ${circulating:,}) — likely overlapping labels"
+            )
+
+    by_kind = payload.get("byKind") or {}
+    if by_kind:
+        kind_total = sum(by_kind.values())
+        venue_total = sum(v.get("total", 0) for v in venues)
+        if abs(kind_total - venue_total) > 2:
+            err(
+                f"{ALLOCATIONS_PATH}: byKind sums to {kind_total:,} but venues "
+                f"sum to {venue_total:,}"
+            )
+
+    attributed_all = sum(t.get("attributed") or 0 for t in tokens.values())
+    supply_all = sum(t.get("circulating") or 0 for t in tokens.values())
+    pct = f"{attributed_all / supply_all * 100:.1f}%" if supply_all else "n/a"
+    print(
+        f"{ALLOCATIONS_PATH}: {len(venues)} venues, {len(tokens)} coins, "
+        f"${attributed_all:,} attributed ({pct} of ${supply_all:,})"
+    )
+
+
 def main() -> int:
     data = load_data_js()
     if data:
         validate_data(data)
     validate_history()
+    validate_allocations()
 
     if warnings:
         print(f"\n{len(warnings)} warning(s):")
