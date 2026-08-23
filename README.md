@@ -65,10 +65,11 @@ which needs a different kind of source: balances of **labelled** addresses.
 
 Three limits are structural and are surfaced in the view itself, not buried:
 
-- **Coverage is partial.** Only labelled addresses can be attributed. Around
-  60% of USDT and 52% of USDC sits at addresses nobody has tagged. That
-  residual is charted as its own band rather than rescaled away — a chart that
-  hid it would imply the market is far better understood than it is.
+- **Coverage is partial.** Only labelled addresses can be attributed —
+  currently 37.7% of tracked supply. The rest sits at addresses nobody has
+  tagged, and that residual is charted as its own band rather than rescaled
+  away: a chart that hid it would imply the market is far better understood
+  than it is.
 - **Venues overlap.** A dollar lent on one protocol can be borrowed and
   redeposited on another, so venue totals are "value present at a venue", not
   a partition of supply.
@@ -79,6 +80,25 @@ Three limits are structural and are surfaced in the view itself, not buried:
 Bridge escrow is bucketed separately from DeFi: a dollar locked in a bridge
 backs a representation that is counted again on the destination chain, so
 folding it into DeFi would overstate deployed capital.
+
+### What is deliberately excluded
+
+Widening scope from 2 coins to 21 surfaced several ways to count the same
+dollar twice. Each is now excluded, and `validate_data.py` fails the build if a
+coin attributes more than 1.25x its own supply — the symptom all of them shared:
+
+- **The coin's own issuing protocol.** DefiLlama lists stablecoins as protocols
+  in their own right, so "Ethena USDe" and "Tether Gold" were attributing each
+  asset's entire backing to itself. Detected by symbol, falling back to the
+  protocol name — Ethena carries its governance token as `symbol`, so symbol
+  alone missed it and USDe attributed 191% of supply.
+- **Roll-up TVL keys.** `chainTvls` carries `borrowed`, `staking` and friends
+  both bare and chain-prefixed. Skipping only the prefixed form double counted
+  every lending market.
+- **Same-ticker namesakes.** Several listed assets share a ticker; taking the
+  last match read USDe's supply off a $49k namesake. The largest wins.
+- **Negative balances.** Some lending entries report net of borrowing and go
+  below zero, silently offsetting real balances in the same total.
 
 ### Token matching
 

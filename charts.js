@@ -821,7 +821,16 @@ function renderStackedBars(
   const W = plotWidth(plot);
   const rowH = 62;
   const H = rows.length * rowH + 8;
-  const M = scaleMargins(W, { top: 4, right: 8, bottom: 4, left: 74 });
+
+  // Labels sit beside the bars on a wide plot and above them on a narrow one.
+  // A side gutter wide enough for "Robinhood Chain" would eat a third of a
+  // phone's width, and shrinking it instead clips the label off the edge.
+  const stackLabels = W < 520;
+  const longest = rows.reduce((n, r) => Math.max(n, String(r.label).length), 0);
+  const gutter = stackLabels
+    ? 0
+    : Math.min(Math.max(longest * 7.4 + 16, 48), Math.round(W * 0.3));
+  const M = { top: 4, right: 8, bottom: 4, left: gutter };
   const innerW = W - M.left - M.right;
   const GAP = 2;
 
@@ -840,21 +849,21 @@ function renderStackedBars(
     const barH = 26;
 
     const name = svgEl("text", {
-      x: M.left - 12,
-      y: yTop + barH / 2 + 4,
+      x: stackLabels ? M.left : M.left - 12,
+      y: stackLabels ? yTop - 7 : yTop + barH / 2 + 4,
       class: "chart-row-label",
-      "text-anchor": "end",
+      "text-anchor": stackLabels ? "start" : "end",
     });
     name.textContent = row.label;
     svg.appendChild(name);
 
     const totalLabel = svgEl("text", {
-      x: M.left,
+      x: stackLabels ? W - M.right : M.left,
       y: yTop - 7,
       class: "chart-axis-label",
-      "text-anchor": "start",
+      "text-anchor": stackLabels ? "end" : "start",
     });
-    totalLabel.textContent = `${format(total)} total`;
+    totalLabel.textContent = stackLabels ? format(total) : `${format(total)} total`;
     svg.appendChild(totalLabel);
 
     let cursor = M.left;
